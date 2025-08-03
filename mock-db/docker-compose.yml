@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql:8
+    container_name: mock-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mock_db
+      MYSQL_USER: mock
+      MYSQL_PASSWORD: mock
+    ports:
+      - "3308:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:

@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum AntisocialCheckStatus {
+  unchecked
+  checked
+  check_exception
+  monitor_checked
+}
+
+//// base entities
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // related entities
+  vendors             ClientVendor[]
+  csp                 ClientCsp[]
+  outsourcingPartners ClientOutsourcingPartner[]
+
+  // assignments refers client
+  vendorServiceCspAssignments      VendorServiceCspAssignment[]      @relation("ClientToVendorServiceCspAssignment")
+  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[] @relation("ClientToOutsourcingServiceCspAssignment")
+}
+
+model Vendor {
+  id                    Int                   @id @default(autoincrement())
+  name                  String                @unique
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+
+  // related entities
+  clients        ClientVendor[]
+  vendorServices VendorService[] @relation("VendorToVendorService")
+
+  // assignments refers vendor
+  vendorServiceCspAssignments VendorServiceCspAssignment[] @relation("VendorToVendorServiceCspAssignment")
+}
+
+model VendorService {
+  id                          Int                          @id @default(autoincrement())
+  name                        String                       @unique
+  vendorId                    Int
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  vendor                      Vendor                       @relation("VendorToVendorService", fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorServiceCspAssignments VendorServiceCspAssignment[] @relation("VendorServiceToVendorServiceCspAssignment")
+
+  @@index([vendorId])
+}
+
+model Csp {
+  id                    Int                   @id @default(autoincrement())
+  name                  String                @unique
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+
+  // related entities
+  clients     ClientCsp[]
+  cspServices CspService[] @relation("CspToCspService")
+
+  // assignments refers csp
+  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[]
+  vendorServiceCspAssignments      VendorServiceCspAssignment[]
+}
+
+model CspService {
+  id                               Int                               @id @default(autoincrement())
+  name                             String                            @unique
+  cspId                            Int
+  createdAt                        DateTime                          @default(now())
+  updatedAt                        DateTime                          @updatedAt
+  csp                              Csp                               @relation("CspToCspService", fields: [cspId], references: [id], onDelete: Cascade)
+  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[]
+  vendorServiceCspAssignments      VendorServiceCspAssignment[]
+
+  @@index([cspId])
+}
+
+model OutsourcingPartner {
+  id                    Int                   @id @default(autoincrement())
+  name                  String                @unique
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+
+  // related entities
+  clients             ClientOutsourcingPartner[]
+  outsourcingServices OutsourcingService[]
+
+  // assignments
+  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[] @relation("OutsourcingPartnerToOutsourcingServiceCspAssignment")
+}
+
+model OutsourcingService {
+  id                               Int                               @id @default(autoincrement())
+  name                             String                            @unique
+  outsourcingPartnerId             Int
+  createdAt                        DateTime                          @default(now())
+  updatedAt                        DateTime                          @updatedAt
+  outsourcingPartner               OutsourcingPartner                @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[] @relation("OutsourcingServiceToOutsourcingServiceCspAssignment")
+
+  @@index([outsourcingPartnerId])
+}
+
+//// relation with client
+
+model ClientVendor {
+  clientId Int
+  vendorId Int
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, vendorId])
+  @@index([vendorId])
+}
+
+model ClientCsp {
+  clientId Int
+  cspId    Int
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  csp      Csp    @relation(fields: [cspId], references: [id], onDelete: Cascade)
+
+  @@id([cspId, clientId])
+  @@index([cspId])
+}
+
+model ClientOutsourcingPartner {
+  clientId             Int
+  outsourcingPartnerId Int
+  client               Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  outsourcingPartner   OutsourcingPartner @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+
+  @@id([clientId, outsourcingPartnerId])
+  @@index([outsourcingPartnerId])
+}
+
+//// assignments
+
+model VendorServiceCspAssignment {
+  id              Int           @id @default(autoincrement())
+  clientId        Int
+  vendorId        Int
+  vendorServiceId Int
+  cspId           Int
+  cspServiceId    Int
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  client          Client        @relation("ClientToVendorServiceCspAssignment", fields: [clientId], references: [id], onDelete: Cascade)
+  vendor          Vendor        @relation("VendorToVendorServiceCspAssignment", fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorService   VendorService @relation("VendorServiceToVendorServiceCspAssignment", fields: [vendorServiceId], references: [id], onDelete: Cascade)
+  csp             Csp           @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService      CspService    @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([cspId])
+  @@index([cspServiceId])
+  @@index([vendorId])
+  @@index([vendorServiceId])
+
+  @@unique([clientId, vendorServiceId, cspId, cspServiceId])
+
+}
+
+model OutsourcingServiceCspAssignment {
+  id                   Int                @id @default(autoincrement())
+  clientId             Int
+  outsourcingPartnerId Int
+  outsourcingServiceId Int
+  cspId                Int
+  cspServiceId         Int
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  client               Client             @relation("ClientToOutsourcingServiceCspAssignment", fields: [clientId], references: [id], onDelete: Cascade)
+  outsourcingPartner   OutsourcingPartner @relation("OutsourcingPartnerToOutsourcingServiceCspAssignment", fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+  outsourcingService   OutsourcingService @relation("OutsourcingServiceToOutsourcingServiceCspAssignment", fields: [outsourcingServiceId], references: [id], onDelete: Cascade)
+  csp                  Csp                @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService           CspService         @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([cspId])
+  @@index([cspServiceId])
+  @@index([outsourcingPartnerId])
+  @@index([outsourcingServiceId])
+
+  @@unique([clientId, outsourcingServiceId, cspId, cspServiceId])
+}

@@ -1,0 +1,29 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# 環境変数
+.env
+.env.local
+.env.*.local
+
+# テスト
+coverage/
+
+# OSごみファイル
+.DS_Store
+Thumbs.db
+
+# MySQL永続化データ（docker-composeで使う場合）
+mysql-data/
+db-data/
