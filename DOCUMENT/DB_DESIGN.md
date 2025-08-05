@@ -197,9 +197,8 @@
 ## 4. リレーション図（概要）
 
 - Client, Vendor, VendorService, Csp, CspService, OutsourcingPartner, OutsourcingService, Cycle などの各エンティティが、Summary テーブルで多対多・1 対多の関係で結びついています。
-## 5. R図（リレーション図）
 
-以下は、主要テーブル間のリレーション（R図）です。
+## 5. ER 図（リレーション図）
 
 ```
 [Client] 1 --- n [SummaryVendorService] n --- 1 [Vendor]
@@ -238,98 +237,5 @@
 [Cycle] 1 --- n [SummaryOutsourcingServiceCspService]
 ```
 
-- `1 --- n` は1対多、`n --- 1`も多対1の関係を示します。
-- Summaryテーブルが各エンティティ（Client, Vendor, VendorService, Csp, CspService, OutsourcingPartner, OutsourcingService, Cycle）を橋渡ししています。
-- 詳細なER図・可視化が必要な場合は、PlantUMLやdbdiagram.io形式での出力も可能です。
-## 6. ER図（PlantUMLコード例）
-
-以下は、PlantUML形式で記述したER図のコード例です。
-PlantUMLやdbdiagram.ioなどのツールで可視化できます。
-
-```plantuml
-@startuml
-entity Client {
-  *id : Int
-  *name : String
-}
-entity Vendor {
-  *id : Int
-  *name : String
-}
-entity VendorService {
-  *id : Int
-  *name : String
-  vendorId : Int
-}
-entity Csp {
-  *id : Int
-  *name : String
-}
-entity CspService {
-  *id : Int
-  *name : String
-  cspId : Int
-}
-entity Cycle {
-  *id : Int
-  *name : String
-}
-entity OutsourcingPartner {
-  *id : Int
-  *name : String
-}
-entity OutsourcingService {
-  *id : Int
-  *name : String
-  outsourcingPartnerId : Int
-}
-entity SummaryVendorService {
-  *id : Int
-  cycleId : Int
-  clientId : Int
-  vendorId : Int
-  vendorServiceId : Int
-}
-entity SummaryVendorServiceCspService {
-  *id : Int
-  cycleId : Int
-  clientId : Int
-  vendorId : Int
-  vendorServiceId : Int
-  cspId : Int
-  cspServiceId : Int
-}
-entity SummaryOutsourcingServiceCspService {
-  *id : Int
-  cycleId : Int
-  clientId : Int
-  outsourcingPartnerId : Int
-  outsourcingServiceId : Int
-  cspId : Int
-  cspServiceId : Int
-}
-
-// リレーション
-Client ||--o{ SummaryVendorService : ""
-Vendor ||--o{ SummaryVendorService : ""
-VendorService ||--o{ SummaryVendorService : ""
-Cycle ||--o{ SummaryVendorService : ""
-
-Client ||--o{ SummaryVendorServiceCspService : ""
-Vendor ||--o{ SummaryVendorServiceCspService : ""
-VendorService ||--o{ SummaryVendorServiceCspService : ""
-Csp ||--o{ SummaryVendorServiceCspService : ""
-CspService ||--o{ SummaryVendorServiceCspService : ""
-Cycle ||--o{ SummaryVendorServiceCspService : ""
-
-Client ||--o{ SummaryOutsourcingServiceCspService : ""
-OutsourcingPartner ||--o{ SummaryOutsourcingServiceCspService : ""
-OutsourcingService ||--o{ SummaryOutsourcingServiceCspService : ""
-Csp ||--o{ SummaryOutsourcingServiceCspService : ""
-CspService ||--o{ SummaryOutsourcingServiceCspService : ""
-Cycle ||--o{ SummaryOutsourcingServiceCspService : ""
-@enduml
-```
-
-- 上記コードをPlantUMLエディタ等で貼り付けていただくと、ER図として可視化できます。
-- dbdiagram.io形式や他フォーマットでの出力もご希望があれば対応可能です。
+- `1 --- n` は 1 対多、`n --- 1`も多対 1 の関係を示します。
+- Summary テーブルが各エンティティ（Client, Vendor, VendorService, Csp, CspService, OutsourcingPartner, OutsourcingService, Cycle）を橋渡ししています。

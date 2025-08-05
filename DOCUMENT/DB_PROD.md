@@ -11,7 +11,7 @@ npx prisma db seed
 ## .env ファイル
 
 本番用にファイルを書き換える。
-以下では、RDS インスタンスを private subnet に配置しているため、ポートフォワードを経て接続する。
+RDS インスタンスを private subnet に配置しているため、ポートフォワードを経て接続する。
 
 ```sh
 # dev
