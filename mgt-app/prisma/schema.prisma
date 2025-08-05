@@ -14,11 +14,6 @@ enum AntisocialCheckStatus {
   monitor_checked
 }
 
-// enum ChecklistType {
-//   common
-//   detail
-// }
-
 enum ChecklistStatusEnum {
   not_created
   completed
@@ -133,8 +128,8 @@ model SummaryVendorService {
   vendorServiceId Int
 
   vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  vendorCommonChecklistStatus           ChecklistStatusEnum
-  vendorDetailChecklistStatus           ChecklistStatusEnum
+  vendorCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
+  vendorDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -158,12 +153,12 @@ model SummaryVendorServiceCspService {
   cspServiceId                 Int
 
   vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  vendorCommonChecklistStatus           ChecklistStatusEnum
-  vendorDetailChecklistStatus           ChecklistStatusEnum
+  vendorCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
+  vendorDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
 
   cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  cspCommonChecklistStatus           ChecklistStatusEnum
-  cspDetailChecklistStatus           ChecklistStatusEnum
+  cspCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
+  cspDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -191,8 +186,8 @@ model SummaryOutsourcingServiceCspService {
   outsourcingPartnerAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
 
   cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  cspServiceCommonChecklistStatus           ChecklistStatusEnum
-  cspServiceDetailChecklistStatus           ChecklistStatusEnum
+  cspServiceCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
+  cspServiceDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

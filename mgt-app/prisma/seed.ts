@@ -238,6 +238,30 @@ async function main() {
   console.log("最初のアウトソーシングサービス")
   console.log(outsourcingServices["開発の委託"])
 
+  // Cycle
+  const cycleName = [
+    {
+      name: "2025年 上期",
+      startDate: new Date("2025-04-01"),
+      endDate: new Date("2025-09-30"),
+      isActive: true,
+    },
+  ]
+
+  const cycleArray = await Promise.all(
+    cycleName.map((cycle) =>
+      prisma.cycle.upsert({
+        where: { name: cycle.name },
+        update: {},
+        create: cycle,
+      })
+    )
+  )
+
+  console.log("最初のサイクル")
+  console.log(cycleArray[0])
+
+  // SummaryVendorService
   type ClientVendorVendorService = {
     client: string
     vendor: string
@@ -300,28 +324,44 @@ async function main() {
     },
   ]
 
-  const clientVendorVendorServiceArray = await Promise.all(
-    clientVendorVendorServicePairs.map(({ client, vendor, vendorService }) =>
-      prisma.SummaryVendorService.upsert({
+  const summaryVendorServiceArray = await Promise.all(
+    clientVendorVendorServicePairs.map(({ client, vendor, vendorService }) => {
+      console.log(
+        clients[client].name,
+        vendors[vendor].name,
+        vendorServices[vendorService].name
+      )
+      return prisma.summaryVendorService.upsert({
         where: {
-          clientId_vendorId_vendorServiceId: {
+          clientId_vendorServiceId: {
             clientId: clients[client].id,
-            vendorId: vendors[vendor].id,
             vendorServiceId: vendorServices[vendorService].id,
           },
         },
         update: {},
         create: {
+          cycleId: cycleArray[0].id,
           clientId: clients[client].id,
           vendorId: vendors[vendor].id,
           vendorServiceId: vendorServices[vendorService].id,
         },
       })
-    )
+    })
   )
 
-  // VendorServiceCspAssignment
-  const vendorServiceCspServicePairs = [
+  console.log("最初のSummaryVendorService")
+  console.log(summaryVendorServiceArray[0])
+
+  // SummaryVendorServiceCspService
+  type VendorServiceCspServicePair = {
+    client: string
+    vendor: string
+    vendorService: string
+    csp: string
+    cspService: string
+  }
+
+  const vendorServiceCspServicePairs: VendorServiceCspServicePair[] = [
     {
       client: "事務システム部",
       vendor: "ホームズ",
@@ -373,20 +413,27 @@ async function main() {
     },
   ]
 
-  const vendorServiceCspAssignmentArray = await Promise.all(
-    vendorServiceCspAssignmentPairs.map(
-      ({ client, vendor, vendorService, csp, cspService }) =>
-        prisma.vendorServiceCspAssignment.upsert({
+  const summaryVendorServiceCspServiceArray = await Promise.all(
+    vendorServiceCspServicePairs.map(
+      ({ client, vendor, vendorService, csp, cspService }) => {
+        console.log(
+          clients[client].name,
+          vendors[vendor].name,
+          vendorServices[vendorService].name,
+          csps[csp].name,
+          cspServices[cspService].name
+        )
+        return prisma.summaryVendorServiceCspService.upsert({
           where: {
-            clientId_vendorServiceId_cspId_cspServiceId: {
+            clientId_vendorServiceId_cspServiceId: {
               clientId: clients[client].id,
               vendorServiceId: vendorServices[vendorService].id,
-              cspId: csps[csp].id,
               cspServiceId: cspServices[cspService].id,
             },
           },
           update: {},
           create: {
+            cycleId: cycleArray[0].id,
             clientId: clients[client].id,
             vendorId: vendors[vendor].id,
             vendorServiceId: vendorServices[vendorService].id,
@@ -394,63 +441,213 @@ async function main() {
             cspServiceId: cspServices[cspService].id,
           },
         })
+      }
     )
   )
 
-  console.log("最初のVendorServiceCspAssignment")
-  console.log(vendorServiceCspAssignmentArray[0])
+  console.log("最初のSummaryVendorServiceCspService")
+  console.log(summaryVendorServiceCspServiceArray[0])
 
-  // OutsourcingServiceCspAssignment
-  const outsourcingServiceCspAssignmentPairs = [
-    {
-      client: "事務システム部",
-      outsourcingPartner: "TIS",
-      outsourcingService: "開発の委託",
-      csp: "アマゾンウエブサービスジャパン",
-      cspService: "AWS",
-    },
-    {
-      client: "人事総務部",
-      outsourcingPartner: "エイチアールワン",
-      outsourcingService: "人事業務の委託",
-      csp: "オービック",
-      cspService: "オービッククラウド",
-    },
-    {
-      client: "人事総務部",
-      outsourcingPartner: "エイチアールワン",
-      outsourcingService: "人事業務の委託",
-      csp: "ソフトバンク",
-      cspService: "ソフトバンククラウド",
-    },
-  ]
+  // SummaryOutsourcingServiceCspService
+  type OutsourcingServiceCspServicePair = {
+    client: string
+    outsourcingPartner: string
+    outsourcingService: string
+    csp: string
+    cspService: string
+  }
 
-  const outsourcingServiceCspAssignmentArray = await Promise.all(
-    outsourcingServiceCspAssignmentPairs.map(
-      ({ client, outsourcingPartner, outsourcingService, csp, cspService }) =>
-        prisma.outsourcingServiceCspAssignment.upsert({
+  const outsourcingServiceCspServicePairs: OutsourcingServiceCspServicePair[] =
+    [
+      {
+        client: "事務システム部",
+        outsourcingPartner: "TIS",
+        outsourcingService: "開発の委託",
+        csp: "アマゾンウエブサービスジャパン",
+        cspService: "AWS",
+      },
+      {
+        client: "人事総務部",
+        outsourcingPartner: "エイチアールワン",
+        outsourcingService: "人事業務の委託",
+        csp: "オービック",
+        cspService: "オービッククラウド",
+      },
+      {
+        client: "人事総務部",
+        outsourcingPartner: "エイチアールワン",
+        outsourcingService: "人事業務の委託",
+        csp: "ソフトバンク",
+        cspService: "ソフトバンククラウド",
+      },
+    ]
+
+  const outsourcingServiceCspServiceArray = await Promise.all(
+    outsourcingServiceCspServicePairs.map(
+      ({ client, outsourcingPartner, outsourcingService, csp, cspService }) => {
+        console.log(
+          clients[client].name,
+          outsourcingPartners[outsourcingPartner].name,
+          outsourcingServices[outsourcingService].name,
+          csps[csp].name,
+          cspServices[cspService].name
+        )
+        return prisma.summaryOutsourcingServiceCspService.upsert({
           where: {
-            clientId_outsourcingServiceId_cspId_cspServiceId: {
+            clientId_outsourcingServiceId_cspServiceId: {
               clientId: clients[client].id,
               outsourcingServiceId: outsourcingServices[outsourcingService].id,
-              cspId: csps[csp].id,
               cspServiceId: cspServices[cspService].id,
             },
           },
           update: {},
           create: {
+            cycleId: cycleArray[0].id,
             clientId: clients[client].id,
-            outsourcingServiceId: outsourcingServices[outsourcingService].id,
             outsourcingPartnerId: outsourcingPartners[outsourcingPartner].id,
+            outsourcingServiceId: outsourcingServices[outsourcingService].id,
             cspId: csps[csp].id,
             cspServiceId: cspServices[cspService].id,
           },
         })
+      }
     )
   )
 
-  console.log("最初のOutsourcingServiceCspAssignment")
-  console.log(outsourcingServiceCspAssignmentArray[0])
+  console.log("最初のSummaryOutsourcingServiceCspService")
+  console.log(outsourcingServiceCspServiceArray[0])
+
+  // // VendorServiceCspAssignment
+  // const vendorServiceCspServicePairs = [
+  //   {
+  //     client: "事務システム部",
+  //     vendor: "ホームズ",
+  //     vendorService: "オンライン登記情報システム",
+  //     csp: "TOKAIコミュニケーションズ",
+  //     cspService: "TOKAIクラウド",
+  //   },
+  //   {
+  //     client: "人事総務部",
+  //     vendor: "Cornerstone OnDemand, Inc.",
+  //     vendorService: "Cornerstone （University＋）",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  //   {
+  //     client: "人事総務部",
+  //     vendor: "ウェルリンク",
+  //     vendorService: "こころ元気生活、こころリンク",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  //   {
+  //     client: "人事総務部",
+  //     vendor: "ベネフィット・ワン",
+  //     vendorService: "ベネワンプラットフォーム",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  //   {
+  //     client: "営業企画部",
+  //     vendor: "ソフトブレーン",
+  //     vendorService: "eセールスマネージャー",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  //   {
+  //     client: "業務推進部",
+  //     vendor: "トランス・コスモス",
+  //     vendorService: "ClickM@iler",
+  //     csp: "IDCフロンティア",
+  //     cspService: "IDCフロンティアクラウド",
+  //   },
+  //   {
+  //     client: "財務経理部",
+  //     vendor: "SBIビジネス・ソリューションズ",
+  //     vendorService: "経費BANK",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  // ]
+
+  // const vendorServiceCspAssignmentArray = await Promise.all(
+  //   vendorServiceCspAssignmentPairs.map(
+  //     ({ client, vendor, vendorService, csp, cspService }) =>
+  //       prisma.vendorServiceCspAssignment.upsert({
+  //         where: {
+  //           clientId_vendorServiceId_cspId_cspServiceId: {
+  //             clientId: clients[client].id,
+  //             vendorServiceId: vendorServices[vendorService].id,
+  //             cspId: csps[csp].id,
+  //             cspServiceId: cspServices[cspService].id,
+  //           },
+  //         },
+  //         update: {},
+  //         create: {
+  //           clientId: clients[client].id,
+  //           vendorId: vendors[vendor].id,
+  //           vendorServiceId: vendorServices[vendorService].id,
+  //           cspId: csps[csp].id,
+  //           cspServiceId: cspServices[cspService].id,
+  //         },
+  //       })
+  //   )
+  // )
+
+  // console.log("最初のVendorServiceCspAssignment")
+  // console.log(vendorServiceCspAssignmentArray[0])
+
+  // // OutsourcingServiceCspAssignment
+  // const outsourcingServiceCspAssignmentPairs = [
+  //   {
+  //     client: "事務システム部",
+  //     outsourcingPartner: "TIS",
+  //     outsourcingService: "開発の委託",
+  //     csp: "アマゾンウエブサービスジャパン",
+  //     cspService: "AWS",
+  //   },
+  //   {
+  //     client: "人事総務部",
+  //     outsourcingPartner: "エイチアールワン",
+  //     outsourcingService: "人事業務の委託",
+  //     csp: "オービック",
+  //     cspService: "オービッククラウド",
+  //   },
+  //   {
+  //     client: "人事総務部",
+  //     outsourcingPartner: "エイチアールワン",
+  //     outsourcingService: "人事業務の委託",
+  //     csp: "ソフトバンク",
+  //     cspService: "ソフトバンククラウド",
+  //   },
+  // ]
+
+  // const outsourcingServiceCspAssignmentArray = await Promise.all(
+  //   outsourcingServiceCspAssignmentPairs.map(
+  //     ({ client, outsourcingPartner, outsourcingService, csp, cspService }) =>
+  //       prisma.outsourcingServiceCspAssignment.upsert({
+  //         where: {
+  //           clientId_outsourcingServiceId_cspId_cspServiceId: {
+  //             clientId: clients[client].id,
+  //             outsourcingServiceId: outsourcingServices[outsourcingService].id,
+  //             cspId: csps[csp].id,
+  //             cspServiceId: cspServices[cspService].id,
+  //           },
+  //         },
+  //         update: {},
+  //         create: {
+  //           clientId: clients[client].id,
+  //           outsourcingServiceId: outsourcingServices[outsourcingService].id,
+  //           outsourcingPartnerId: outsourcingPartners[outsourcingPartner].id,
+  //           cspId: csps[csp].id,
+  //           cspServiceId: cspServices[cspService].id,
+  //         },
+  //       })
+  //   )
+  // )
+
+  // console.log("最初のOutsourcingServiceCspAssignment")
+  // console.log(outsourcingServiceCspAssignmentArray[0])
 }
 
 main()
