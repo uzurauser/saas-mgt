@@ -1,8 +1,8 @@
-# DB 設計書（prisma/schema.prisma より自動生成）
+# DB 設計書
 
 ## 概要
 
-このドキュメントは `/mgt-app/prisma/schema.prisma` をもとに自動生成された DB 設計書です。
+このドキュメントは `schema.prisma` をもとに自動生成した DB 設計書です。
 
 ---
 
@@ -19,11 +19,13 @@
 
 #### リレーション
 
-- vendors: ClientVendor[]
-- csp: ClientCsp[]
-- outsourcingPartners: ClientOutsourcingPartner[]
-- vendorServiceCspAssignments: VendorServiceCspAssignment[]
-- outsourcingServiceCspAssignments: OutsourcingServiceCspAssignment[]
+| table                            | relation                          |
+| -------------------------------- | --------------------------------- |
+| vendors                          | ClientVendor[]                    |
+| csp                              | ClientCsp[]                       |
+| outsourcingPartners              | ClientOutsourcingPartner[]        |
+| vendorServiceCspAssignments      | VendorServiceCspAssignment[]      |
+| outsourcingServiceCspAssignments | OutsourcingServiceCspAssignment[] |
 
 ---
 
@@ -39,9 +41,11 @@
 
 #### リレーション
 
-- clients: ClientVendor[]
-- vendorServices: VendorService[]
-- vendorServiceCspAssignments: VendorServiceCspAssignment[]
+| table                       | relation                     |
+| --------------------------- | ---------------------------- |
+| clients                     | ClientVendor[]               |
+| vendorServices              | VendorService[]              |
+| vendorServiceCspAssignments | VendorServiceCspAssignment[] |
 
 ---
 
@@ -57,8 +61,10 @@
 
 #### リレーション
 
-- vendor: Vendor
-- vendorServiceCspAssignments: VendorServiceCspAssignment[]
+| table                       | relation                     |
+| --------------------------- | ---------------------------- |
+| vendor                      | Vendor                       |
+| vendorServiceCspAssignments | VendorServiceCspAssignment[] |
 
 ---
 
@@ -110,11 +116,13 @@
 
 ### 8. リレーション・中間テーブル
 
-- ClientVendor
-- ClientCsp
-- ClientOutsourcingPartner
-- VendorServiceCspAssignment
-- OutsourcingServiceCspAssignment
+| table                           | relation                          |
+| ------------------------------- | --------------------------------- |
+| ClientVendor                    | ClientVendor[]                    |
+| ClientCsp                       | ClientCsp[]                       |
+| ClientOutsourcingPartner        | ClientOutsourcingPartner[]        |
+| VendorServiceCspAssignment      | VendorServiceCspAssignment[]      |
+| OutsourcingServiceCspAssignment | OutsourcingServiceCspAssignment[] |
 
 （詳細は schema.prisma を参照）
 

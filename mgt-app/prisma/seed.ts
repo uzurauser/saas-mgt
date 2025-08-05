@@ -53,6 +53,7 @@ async function main() {
     "ウェルリンク",
     "SBIビジネス・ソリューションズ",
     "ソフトブレーン",
+    "リクルートマネジメントソリューションズ",
   ]
 
   const vendorsArray = await Promise.all(
@@ -145,6 +146,7 @@ async function main() {
     "こころ元気生活、こころリンク": "ウェルリンク",
     経費BANK: "SBIビジネス・ソリューションズ",
     eセールスマネージャー: "ソフトブレーン",
+    "SPI3 for Employees": "リクルートマネジメントソリューションズ",
   }
 
   const vendorServiceArray = await Promise.all(
@@ -236,70 +238,90 @@ async function main() {
   console.log("最初のアウトソーシングサービス")
   console.log(outsourcingServices["開発の委託"])
 
-  // ClientVendor
-  const clientVendorPairs = [
-    { clientName: "事務システム部", vendorName: "ホームズ" },
-    { clientName: "人事総務部", vendorName: "Cornerstone OnDemand, Inc." },
-    { clientName: "人事総務部", vendorName: "ウェルリンク" },
-    { clientName: "人事総務部", vendorName: "ベネフィット・ワン" },
-    { clientName: "営業企画部", vendorName: "ソフトブレーン" },
-    { clientName: "業務推進部", vendorName: "トランス・コスモス" },
-    { clientName: "財務経理部", vendorName: "SBIビジネス・ソリューションズ" },
+  type ClientVendorVendorService = {
+    client: string
+    vendor: string
+    vendorService: string
+  }
+
+  const clientVendorVendorServicePairs: ClientVendorVendorService[] = [
+    {
+      client: "事務システム部",
+      vendor: "Zoom Communications, Inc.",
+      vendorService: "Zoom",
+    },
+    {
+      client: "事務システム部",
+      vendor: "日本電気",
+      vendorService: "UNIVERGE どこでもアクセスDirectサービス",
+    },
+    {
+      client: "事務システム部",
+      vendor: "サイボウズ",
+      vendorService: "Kintone",
+    },
+    { client: "事務システム部", vendor: "Box Japan", vendorService: "Box" },
+    {
+      client: "事務システム部",
+      vendor: "トヨクモ",
+      vendorService: "フォームブリッジ",
+    },
+    { client: "事務システム部", vendor: "トヨクモ", vendorService: "K Viewer" },
+    {
+      client: "事務システム部",
+      vendor: "シヤチハタ",
+      vendorService: "Shachihata Cloud",
+    },
+    {
+      client: "事務システム部",
+      vendor: "コラボスタイル",
+      vendorService: "コラボフロー",
+    },
+    {
+      client: "事務システム部",
+      vendor: "Amazon Web Services, Inc.",
+      vendorService: "AWS",
+    },
+    { client: "事務システム部", vendor: "neoAI", vendorService: "neoAI Chat" },
+    {
+      client: "事務システム部",
+      vendor: "三井住友カード",
+      vendorService: "Web Bridge",
+    },
+    {
+      client: "人事総務部",
+      vendor: "綜合警備保障",
+      vendorService: "安否確認サービス",
+    },
+    {
+      client: "人事総務部",
+      vendor: "リクルートマネジメントソリューションズ",
+      vendorService: "SPI3 for Employees",
+    },
   ]
 
-  const clientVendorArray = await Promise.all(
-    clientVendorPairs.map(({ clientName, vendorName }) =>
-      prisma.clientVendor.upsert({
+  const clientVendorVendorServiceArray = await Promise.all(
+    clientVendorVendorServicePairs.map(({ client, vendor, vendorService }) =>
+      prisma.SummaryVendorService.upsert({
         where: {
-          clientId_vendorId: {
-            clientId: clients[clientName].id,
-            vendorId: vendors[vendorName].id,
+          clientId_vendorId_vendorServiceId: {
+            clientId: clients[client].id,
+            vendorId: vendors[vendor].id,
+            vendorServiceId: vendorServices[vendorService].id,
           },
         },
         update: {},
         create: {
-          clientId: clients[clientName].id,
-          vendorId: vendors[vendorName].id,
+          clientId: clients[client].id,
+          vendorId: vendors[vendor].id,
+          vendorServiceId: vendorServices[vendorService].id,
         },
       })
     )
   )
 
-  console.log("最初のClientVendor")
-  console.log(clientVendorArray[0])
-
-  // ClientOutsourcingPartner
-  const clientOutsourcingPartnerPairs = [
-    { clientName: "事務システム部", outsourcingPartnerName: "TIS" },
-    { clientName: "人事総務部", outsourcingPartnerName: "エイチアールワン" },
-  ]
-
-  const clientOutsourcingPartnerArray = await Promise.all(
-    clientOutsourcingPartnerPairs.map(
-      ({ clientName, outsourcingPartnerName }) =>
-        prisma.clientOutsourcingPartner.upsert({
-          where: {
-            clientId_outsourcingPartnerId: {
-              clientId: clients[clientName].id,
-              outsourcingPartnerId:
-                outsourcingPartners[outsourcingPartnerName].id,
-            },
-          },
-          update: {},
-          create: {
-            clientId: clients[clientName].id,
-            outsourcingPartnerId:
-              outsourcingPartners[outsourcingPartnerName].id,
-          },
-        })
-    )
-  )
-
-  console.log("最初のClientOutsourcingPartner")
-  console.log(clientOutsourcingPartnerArray[0])
-
   // VendorServiceCspAssignment
-  const vendorServiceCspAssignmentPairs = [
+  const vendorServiceCspServicePairs = [
     {
       client: "事務システム部",
       vendor: "ホームズ",

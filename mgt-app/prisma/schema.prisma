@@ -14,38 +14,28 @@ enum AntisocialCheckStatus {
   monitor_checked
 }
 
-enum ChecklistType {
-  common
-  detail
-}
+// enum ChecklistType {
+//   common
+//   detail
+// }
 
 enum ChecklistStatusEnum {
   not_created
   completed
   not_required
+  is_examined
 }
 
-
 //// base entities
-
 model Client {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // related entities
-  vendors             ClientVendor[]
-  csp                 ClientCsp[]
-  outsourcingPartners ClientOutsourcingPartner[]
-
-  // assignments refers client
-  vendorServiceCspAssignments      VendorServiceCspAssignment[]
-  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[]
-  vendorServiceChecklists VendorServiceChecklist[]
-  CspServiceWithVendorServiceChecklist CspServiceWithVendorServiceChecklist[]
-  OutsourcingServiceWithVendorServiceChecklist OutsourcingServiceWithVendorServiceChecklist[]
-  
+  summaryVendorServices SummaryVendorService[]
+  summaryVendorServiceCspService SummaryVendorServiceCspService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
 model Vendor {
@@ -55,27 +45,21 @@ model Vendor {
   updatedAt             DateTime              @updatedAt
   antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
 
-  // related entities
-  clients        ClientVendor[]
   vendorServices VendorService[] @relation("VendorToVendorService")
-
-  // assignments refers vendor
-  vendorServiceCspAssignments VendorServiceCspAssignment[] @relation("VendorToVendorServiceCspAssignment")
-  vendorServiceChecklists VendorServiceChecklist[]
+  summaryVendorServices SummaryVendorService[]
+  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
 }
 
 model VendorService {
-  id                          Int                          @id @default(autoincrement())
-  name                        String                       @unique
-  vendorId                    Int
-  createdAt                   DateTime                     @default(now())
-  updatedAt                   DateTime                     @updatedAt
-  vendor                      Vendor                       @relation("VendorToVendorService", fields: [vendorId], references: [id], onDelete: Cascade)
-  vendorServiceCspAssignments VendorServiceCspAssignment[] @relation("VendorServiceToVendorServiceCspAssignment")
-  vendorServiceChecklists VendorServiceChecklist[]
-  cspServiceWithVendorServiceChecklists CspServiceWithVendorServiceChecklist[]
+  id                                    Int                                    @id @default(autoincrement())
+  name                                  String                                 @unique
+  vendorId                              Int
+  createdAt                             DateTime                               @default(now())
+  updatedAt                             DateTime                               @updatedAt
+  vendor                                Vendor                                 @relation("VendorToVendorService", fields: [vendorId], references: [id], onDelete: Cascade)
 
-  @@index([vendorId])
+  summaryVendorServices SummaryVendorService[]
+  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
 }
 
 model Csp {
@@ -85,29 +69,21 @@ model Csp {
   updatedAt             DateTime              @updatedAt
   antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
 
-  // related entities
-  clients     ClientCsp[]
   cspServices CspService[] @relation("CspToCspService")
-
-  // assignments refers csp
-  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[]
-  vendorServiceCspAssignments      VendorServiceCspAssignment[]
-  vendorServiceChecklists VendorServiceChecklist[]
-  cspServiceWithVendorServiceChecklists CspServiceWithVendorServiceChecklist[]
+  summaryVendorServiceCspService SummaryVendorServiceCspService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
 model CspService {
-  id                               Int                               @id @default(autoincrement())
-  name                             String                            @unique
-  cspId                            Int
-  createdAt                        DateTime                          @default(now())
-  updatedAt                        DateTime                          @updatedAt
-  csp                              Csp                               @relation("CspToCspService", fields: [cspId], references: [id], onDelete: Cascade)
-  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[]
-  vendorServiceCspAssignments      VendorServiceCspAssignment[]
-  cspServiceWithVendorServiceChecklists CspServiceWithVendorServiceChecklist[]
+  id                                    Int                                    @id @default(autoincrement())
+  name                                  String                                 @unique
+  cspId                                 Int
+  createdAt                             DateTime                               @default(now())
+  updatedAt                             DateTime                               @updatedAt
+  csp                                   Csp                                    @relation("CspToCspService", fields: [cspId], references: [id], onDelete: Cascade)
 
-  @@index([cspId])
+  summaryVendorServiceCspService SummaryVendorServiceCspService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
 model OutsourcingPartner {
@@ -117,203 +93,116 @@ model OutsourcingPartner {
   updatedAt             DateTime              @updatedAt
   antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
 
-  // related entities
-  clients             ClientOutsourcingPartner[]
-  outsourcingServices OutsourcingService[]
-  outsourcingServiceWithVendorServiceChecklists OutsourcingServiceWithVendorServiceChecklist[]
-
-  // assignments
-  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[] @relation("OutsourcingPartnerToOutsourcingServiceCspAssignment")
+  outsourcingServices                           OutsourcingService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
 model OutsourcingService {
-  id                               Int                               @id @default(autoincrement())
-  name                             String                            @unique
-  outsourcingPartnerId             Int
-  createdAt                        DateTime                          @default(now())
-  updatedAt                        DateTime                          @updatedAt
-  outsourcingPartner               OutsourcingPartner                @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-  outsourcingServiceCspAssignments OutsourcingServiceCspAssignment[] @relation("OutsourcingServiceToOutsourcingServiceCspAssignment")
-  outsourcingServiceWithVendorServiceChecklists OutsourcingServiceWithVendorServiceChecklist[]
+  id                                            Int                                            @id @default(autoincrement())
+  name                                          String                                         @unique
+  outsourcingPartnerId                          Int
+  createdAt                                     DateTime                                       @default(now())
+  updatedAt                                     DateTime                                       @updatedAt
+  outsourcingPartner                            OutsourcingPartner                             @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
 
-  @@index([outsourcingPartnerId])
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
-//// relation with client
-
-model ClientVendor {
-  clientId Int
-  vendorId Int
-  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vendor   Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-
-  @@id([clientId, vendorId])
-  @@index([vendorId])
-}
-
-model ClientCsp {
-  clientId Int
-  cspId    Int
-  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  csp      Csp    @relation(fields: [cspId], references: [id], onDelete: Cascade)
-
-  @@id([cspId, clientId])
-  @@index([cspId])
-}
-
-model ClientOutsourcingPartner {
-  clientId             Int
-  outsourcingPartnerId Int
-  client               Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  outsourcingPartner   OutsourcingPartner @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-
-  @@id([clientId, outsourcingPartnerId])
-  @@index([outsourcingPartnerId])
-}
-
-//// assignments
-
-model VendorServiceCspAssignment {
-  id              Int           @id @default(autoincrement())
-  clientId        Int
-  vendorId        Int
-  vendorServiceId Int
-  cspId           Int
-  cspServiceId    Int
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vendor          Vendor        @relation("VendorToVendorServiceCspAssignment", fields: [vendorId], references: [id], onDelete: Cascade)
-  vendorService   VendorService @relation("VendorServiceToVendorServiceCspAssignment", fields: [vendorServiceId], references: [id], onDelete: Cascade)
-  csp             Csp           @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  cspService      CspService    @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
-  vendorServiceChecklists VendorServiceChecklist[]
-  cspServiceWithVendorServiceChecklists CspServiceWithVendorServiceChecklist[]
-
-  @@index([clientId])
-  @@index([cspId])
-  @@index([cspServiceId])
-  @@index([vendorId])
-  @@index([vendorServiceId])
-
-  @@unique([clientId, vendorServiceId, cspId, cspServiceId])
-
-}
-
-model OutsourcingServiceCspAssignment {
-  id                   Int                @id @default(autoincrement())
-  clientId             Int
-  outsourcingPartnerId Int
-  outsourcingServiceId Int
-  cspId                Int
-  cspServiceId         Int
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  client               Client             @relation( fields: [clientId], references: [id], onDelete: Cascade)
-  outsourcingPartner   OutsourcingPartner @relation("OutsourcingPartnerToOutsourcingServiceCspAssignment", fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-  outsourcingService   OutsourcingService @relation("OutsourcingServiceToOutsourcingServiceCspAssignment", fields: [outsourcingServiceId], references: [id], onDelete: Cascade)
-  csp                  Csp                @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  cspService           CspService         @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
-  outsourcingServiceWithVendorServiceChecklists OutsourcingServiceWithVendorServiceChecklist[]
-
-  @@index([clientId])
-  @@index([cspId])
-  @@index([cspServiceId])
-  @@index([outsourcingPartnerId])
-  @@index([outsourcingServiceId])
-
-  @@unique([clientId, outsourcingServiceId, cspId, cspServiceId])
-}
-
-model ChecklistCycle {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+model Cycle {
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
   startDate DateTime
   endDate   DateTime
-
-  isActive  Boolean @default(false)
-
+  isActive Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  summaryVendorServices SummaryVendorService[]
+  summaryVendorServiceCspService SummaryVendorServiceCspService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
 }
 
-//// checklist
-// vendorService checklist
-model VendorServiceChecklist {
-  id        Int      @id @default(autoincrement())
-  checklistCycleId             Int
-  type ChecklistType
-  status ChecklistStatusEnum
+//// Summary
+// vendorService Summary
+model SummaryVendorService {
+  id               Int                 @id @default(autoincrement())
+  cycleId Int
+  clientId  Int
+  vendorId  Int
+  vendorServiceId Int
 
-  clientId                     Int
-  vendorId                     Int
-  vendorServiceId              Int
-  cspId                        Int?
-  vendorServiceCspAssignmentId Int?
+  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  vendorCommonChecklistStatus           ChecklistStatusEnum
+  vendorDetailChecklistStatus           ChecklistStatusEnum
 
-  completedAt   DateTime?
-  isExamined    Boolean              @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vendor        Vendor        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   vendorService VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
-  csp           Csp?          @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  vendorServiceCspAssignment VendorServiceCspAssignment? @relation(fields: [vendorServiceCspAssignmentId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, vendorServiceId])
 }
 
-// cspService checklist
-model CspServiceWithVendorServiceChecklist {
-  id        Int      @id @default(autoincrement())
-  checklistCycleId             Int
-  type ChecklistType
-  status ChecklistStatusEnum
-
+// cspService Summary
+model SummaryVendorServiceCspService {
+  id               Int                 @id @default(autoincrement())
+  cycleId Int
   clientId                     Int
+  vendorId                     Int
+  vendorServiceId              Int
   cspId                        Int
   cspServiceId                 Int
-  vendorServiceId              Int
-  vendorServiceCspAssignmentId Int
 
-  completedAt   DateTime?
-  isExamined    Boolean              @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  vendorCommonChecklistStatus           ChecklistStatusEnum
+  vendorDetailChecklistStatus           ChecklistStatusEnum
 
-  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  csp           Csp           @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  cspService    CspService    @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
-  vendorService VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
-  vendorServiceCspAssignment VendorServiceCspAssignment @relation(fields: [vendorServiceCspAssignmentId], references: [id], onDelete: Cascade)
+  cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  cspCommonChecklistStatus           ChecklistStatusEnum
+  cspDetailChecklistStatus           ChecklistStatusEnum
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  client                     Client                     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  vendor                     Vendor                     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorService              VendorService              @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
+  csp                        Csp                        @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService                 CspService                 @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, vendorServiceId, cspServiceId])
 }
 
-// outsourcingService checklist
-model OutsourcingServiceWithVendorServiceChecklist {
-  id        Int      @id @default(autoincrement())
-  checklistCycleId             Int
-  type ChecklistType
-  status ChecklistStatusEnum
+// outsourcingService Summary
+model SummaryOutsourcingServiceCspService {
+  id               Int                 @id @default(autoincrement())
+  cycleId Int
+  clientId                          Int
+  outsourcingPartnerId              Int
+  outsourcingServiceId              Int
+  cspId Int
+  cspServiceId Int
 
-  clientId                     Int
-  outsourcingPartnerId         Int
-  outsourcingServiceId         Int
-  outsourcingServiceCspAssignmentId Int
+  outsourcingPartnerAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
 
-  completedAt   DateTime?
-  isExamined    Boolean              @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  cspServiceCommonChecklistStatus           ChecklistStatusEnum
+  cspServiceDetailChecklistStatus           ChecklistStatusEnum
 
-  client        Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  outsourcingPartner   OutsourcingPartner   @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-  outsourcingService   OutsourcingService   @relation(fields: [outsourcingServiceId], references: [id],  map: "outsourcingServiceConstraint",onDelete: Cascade)
-  outsourcingServiceCspAssignment OutsourcingServiceCspAssignment @relation(fields: [outsourcingServiceCspAssignmentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  @@unique([clientId, outsourcingServiceId])
+  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  client                          Client                          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  outsourcingPartner              OutsourcingPartner              @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+  outsourcingService              OutsourcingService              @relation(fields: [outsourcingServiceId], references: [id], onDelete: Cascade)
+  csp                 Csp                 @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService                 CspService                 @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, outsourcingServiceId, cspServiceId])
 }

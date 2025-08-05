@@ -123,6 +123,16 @@ GRANT ALL PRIVILEGES ON *.* TO 'mock'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 ```
 
+- 参考：MySQL シェルで「自分がどのユーザーとしてログインしているか」を確認するには?
+
+```sql
+SELECT USER(), CURRENT_USER();
+```
+
+| 関数 |意味
+| USER()|クライアントが認証に使おうとしたユーザー（接続ユーザー）
+| CURRENT_USER()|実際に MySQL が認証したユーザー（有効ユーザー）
+
 ```bash
 npx prisma migrate dev --name init  #マイグレーションを実行し、DB にテーブルを作成
 npx prisma generate                 #Prisma Client を生成
