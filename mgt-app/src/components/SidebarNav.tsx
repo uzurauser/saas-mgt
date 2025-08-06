@@ -5,27 +5,23 @@ import { cn } from "@/lib/utils"
 import { Home, Users, Building2, Layers, ListChecks } from "lucide-react"
 
 const navItems = [
-  { href: "/clients", label: "Clients", icon: <Users size={18} /> },
-  { href: "/vendors", label: "Vendors", icon: <Building2 size={18} /> },
+  { href: "/client", label: "Clients", icon: <Users size={18} /> },
+  { href: "/vendor", label: "Vendors", icon: <Building2 size={18} /> },
   { href: "/csp", label: "CSPs", icon: <Building2 size={18} /> },
   {
-    href: "/outsourcing-partners",
+    href: "/outsourcing-partner",
     label: "Outsourcing Partners",
     icon: <Building2 size={18} />,
   },
+  { href: "/check-cycle", label: "Check Cycle", icon: <Building2 size={18} /> },
   {
-    href: "/vendor-services",
-    label: "Vendor Services",
+    href: "/register",
+    label: "Register",
     icon: <Layers size={18} />,
   },
   {
-    href: "/checklist-cycles",
-    label: "Checklist Cycles",
-    icon: <ListChecks size={18} />,
-  },
-  {
-    href: "/checklist-statuses",
-    label: "Checklist Statuses",
+    href: "/summary",
+    label: "Summary",
     icon: <ListChecks size={18} />,
   },
 ]
@@ -33,7 +29,7 @@ const navItems = [
 export function SidebarNav() {
   const pathname = usePathname()
   return (
-    <nav className="flex flex-col gap-2 p-6 min-w-[220px] bg-gradient-to-b from-slate-100 to-white border-r h-full shadow-lg rounded-tr-2xl">
+    <nav className="flex flex-col gap-2 p-6 min-w-[220px] bg-gradient-to-b from-slate-100 to-white border-r shadow-lg rounded-tr-2xl fixed top-0 left-0 h-screen z-40">
       <Link
         href="/"
         className="flex items-center gap-2 font-extrabold text-2xl text-slate-700 mb-8 tracking-wide"

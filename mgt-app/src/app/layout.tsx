@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <div className="flex min-h-screen">
           <SidebarNav />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pl-[240px]">{children}</main>
         </div>
         <Toaster />
       </body>

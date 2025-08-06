@@ -7,6 +7,236 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// / base entities
+model Client {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+  summaryVendorServices               SummaryVendorService[]
+  summaryVendorServiceCspService      SummaryVendorServiceCspService[]
+}
+
+model Vendor {
+  id                              Int                              @id @default(autoincrement())
+  name                            String                           @unique
+  createdAt                       DateTime                         @default(now())
+  updatedAt                       DateTime                         @updatedAt
+  antisocialCheckStatus           AntisocialCheckStatus            @default(unchecked)
+  summaryVendorServices           SummaryVendorService[]
+  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
+  vendorServices                  VendorService[]                  @relation("VendorToVendorService")
+}
+
+model VendorService {
+  id                              Int                              @id @default(autoincrement())
+  name                            String                           @unique
+  vendorId                        Int
+  createdAt                       DateTime                         @default(now())
+  updatedAt                       DateTime                         @updatedAt
+  summaryVendorServices           SummaryVendorService[]
+  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
+  vendor                          Vendor                           @relation("VendorToVendorService", fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId], map: "VendorService_vendorId_fkey")
+}
+
+model Csp {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  antisocialCheckStatus               AntisocialCheckStatus                 @default(unchecked)
+  cspServices                         CspService[]                          @relation("CspToCspService")
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+  summaryVendorServiceCspService      SummaryVendorServiceCspService[]
+}
+
+model CspService {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  cspId                               Int
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  csp                                 Csp                                   @relation("CspToCspService", fields: [cspId], references: [id], onDelete: Cascade)
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+  summaryVendorServiceCspService      SummaryVendorServiceCspService[]
+
+  @@index([cspId], map: "CspService_cspId_fkey")
+}
+
+model OutsourcingPartner {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  antisocialCheckStatus               AntisocialCheckStatus                 @default(unchecked)
+  outsourcingServices                 OutsourcingService[]
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+}
+
+model OutsourcingService {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  outsourcingPartnerId                Int
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  outsourcingPartner                  OutsourcingPartner                    @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+
+  @@index([outsourcingPartnerId], map: "OutsourcingService_outsourcingPartnerId_fkey")
+}
+
+model Cycle {
+  id                                  Int                                   @id @default(autoincrement())
+  name                                String                                @unique
+  startDate                           DateTime
+  endDate                             DateTime
+  isActive                            Boolean                               @default(false)
+  createdAt                           DateTime                              @default(now())
+  updatedAt                           DateTime                              @updatedAt
+  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
+  summaryVendorServices               SummaryVendorService[]
+  summaryVendorServiceCspService      SummaryVendorServiceCspService[]
+}
+
+/// / Summary
+model SummaryVendorService {
+  id                          Int                   @id @default(autoincrement())
+  cycleId                     Int
+  clientId                    Int
+  vendorId                    Int
+  vendorServiceId             Int
+  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  vendorCommonChecklistStatus ChecklistStatusEnum   @default(not_created)
+  vendorDetailChecklistStatus ChecklistStatusEnum   @default(not_created)
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+  client                      Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  cycle                       Cycle                 @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  vendor                      Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorService               VendorService         @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, vendorServiceId])
+  @@index([cycleId], map: "SummaryVendorService_cycleId_fkey")
+  @@index([vendorId], map: "SummaryVendorService_vendorId_fkey")
+  @@index([vendorServiceId], map: "SummaryVendorService_vendorServiceId_fkey")
+}
+
+model SummaryVendorServiceCspService {
+  id                          Int                   @id @default(autoincrement())
+  cycleId                     Int
+  clientId                    Int
+  vendorId                    Int
+  vendorServiceId             Int
+  cspId                       Int
+  cspServiceId                Int
+  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  vendorCommonChecklistStatus ChecklistStatusEnum   @default(not_created)
+  vendorDetailChecklistStatus ChecklistStatusEnum   @default(not_created)
+  cspAntisocialCheckStatus    AntisocialCheckStatus @default(unchecked)
+  cspCommonChecklistStatus    ChecklistStatusEnum   @default(not_created)
+  cspDetailChecklistStatus    ChecklistStatusEnum   @default(not_created)
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+  client                      Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  csp                         Csp                   @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService                  CspService            @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
+  cycle                       Cycle                 @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  vendor                      Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorService               VendorService         @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, vendorServiceId, cspServiceId])
+  @@index([cspId], map: "SummaryVendorServiceCspService_cspId_fkey")
+  @@index([cspServiceId], map: "SummaryVendorServiceCspService_cspServiceId_fkey")
+  @@index([cycleId], map: "SummaryVendorServiceCspService_cycleId_fkey")
+  @@index([vendorId], map: "SummaryVendorServiceCspService_vendorId_fkey")
+  @@index([vendorServiceId], map: "SummaryVendorServiceCspService_vendorServiceId_fkey")
+}
+
+model SummaryOutsourcingServiceCspService {
+  id                                      Int                   @id @default(autoincrement())
+  cycleId                                 Int
+  clientId                                Int
+  outsourcingPartnerId                    Int
+  outsourcingServiceId                    Int
+  cspId                                   Int
+  cspServiceId                            Int
+  outsourcingPartnerAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
+  cspAntisocialCheckStatus                AntisocialCheckStatus @default(unchecked)
+  cspServiceCommonChecklistStatus         ChecklistStatusEnum   @default(not_created)
+  cspServiceDetailChecklistStatus         ChecklistStatusEnum   @default(not_created)
+  createdAt                               DateTime              @default(now())
+  updatedAt                               DateTime              @updatedAt
+  client                                  Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  csp                                     Csp                   @relation(fields: [cspId], references: [id], onDelete: Cascade)
+  cspService                              CspService            @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
+  cycle                                   Cycle                 @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  outsourcingPartner                      OutsourcingPartner    @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
+  outsourcingService                      OutsourcingService    @relation(fields: [outsourcingServiceId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, outsourcingServiceId, cspServiceId])
+  @@index([cspId], map: "SummaryOutsourcingServiceCspService_cspId_fkey")
+  @@index([cspServiceId], map: "SummaryOutsourcingServiceCspService_cspServiceId_fkey")
+  @@index([cycleId], map: "SummaryOutsourcingServiceCspService_cycleId_fkey")
+  @@index([outsourcingPartnerId], map: "SummaryOutsourcingServiceCspService_outsourcingPartnerId_fkey")
+  @@index([outsourcingServiceId], map: "SummaryOutsourcingServiceCspService_outsourcingServiceId_fkey")
+}
+
+model v_summary_vendor_service {
+  id                          Int      @map("id")
+  client_name                 String   @map("client_name")
+  vendor_name                 String   @map("vendor_name")
+  vendor_service_name         String   @map("vendor_service_name")
+  cycleId                     Int      @map("cycleId")
+  vendorAntisocialCheckStatus String   @map("vendorAntisocialCheckStatus")
+  vendorCommonChecklistStatus String   @map("vendorCommonChecklistStatus")
+  vendorDetailChecklistStatus String   @map("vendorDetailChecklistStatus")
+  createdAt                   DateTime @map("createdAt")
+  updatedAt                   DateTime @map("updatedAt")
+
+  @@unique([id])
+}
+
+model v_summary_vendor_service_csp_service {
+  id                          Int      @map("id")
+  client_name                 String   @map("client_name")
+  vendor_name                 String   @map("vendor_name")
+  vendor_service_name         String   @map("vendor_service_name")
+  csp_name                    String   @map("csp_name")
+  csp_service_name            String   @map("csp_service_name")
+  cycleId                     Int      @map("cycleId")
+  vendorAntisocialCheckStatus String   @map("vendorAntisocialCheckStatus")
+  vendorCommonChecklistStatus String   @map("vendorCommonChecklistStatus")
+  vendorDetailChecklistStatus String   @map("vendorDetailChecklistStatus")
+  cspAntisocialCheckStatus    String   @map("cspAntisocialCheckStatus")
+  cspCommonChecklistStatus    String   @map("cspCommonChecklistStatus")
+  cspDetailChecklistStatus    String   @map("cspDetailChecklistStatus")
+  createdAt                   DateTime @map("createdAt")
+  updatedAt                   DateTime @map("updatedAt")
+
+  @@unique([id])
+}
+
+model v_summary_outsourcing_service_csp_service {
+  id                                 Int      @map("id")
+  client_name                        String   @map("client_name")
+  outsourcing_partner_name           String   @map("outsourcing_partner_name")
+  outsourcing_service_name           String   @map("outsourcing_service_name")
+  csp_name                           String   @map("csp_name")
+  csp_service_name                   String   @map("csp_service_name")
+  cycleId                            Int      @map("cycleId")
+  outsourcingPartnerAntisocialCheckStatus String @map("outsourcingPartnerAntisocialCheckStatus")
+  cspAntisocialCheckStatus           String   @map("cspAntisocialCheckStatus")
+  cspServiceCommonChecklistStatus    String   @map("cspServiceCommonChecklistStatus")
+  cspServiceDetailChecklistStatus    String   @map("cspServiceDetailChecklistStatus")
+  createdAt                          DateTime @map("createdAt")
+  updatedAt                          DateTime @map("updatedAt")
+
+  @@unique([id])
+}
+
 enum AntisocialCheckStatus {
   unchecked
   checked
@@ -19,185 +249,4 @@ enum ChecklistStatusEnum {
   completed
   not_required
   is_examined
-}
-
-//// base entities
-model Client {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  summaryVendorServices SummaryVendorService[]
-  summaryVendorServiceCspService SummaryVendorServiceCspService[]
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-model Vendor {
-  id                    Int                   @id @default(autoincrement())
-  name                  String                @unique
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-
-  vendorServices VendorService[] @relation("VendorToVendorService")
-  summaryVendorServices SummaryVendorService[]
-  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
-}
-
-model VendorService {
-  id                                    Int                                    @id @default(autoincrement())
-  name                                  String                                 @unique
-  vendorId                              Int
-  createdAt                             DateTime                               @default(now())
-  updatedAt                             DateTime                               @updatedAt
-  vendor                                Vendor                                 @relation("VendorToVendorService", fields: [vendorId], references: [id], onDelete: Cascade)
-
-  summaryVendorServices SummaryVendorService[]
-  summaryVendorServiceCspServices SummaryVendorServiceCspService[]
-}
-
-model Csp {
-  id                    Int                   @id @default(autoincrement())
-  name                  String                @unique
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-
-  cspServices CspService[] @relation("CspToCspService")
-  summaryVendorServiceCspService SummaryVendorServiceCspService[]
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-model CspService {
-  id                                    Int                                    @id @default(autoincrement())
-  name                                  String                                 @unique
-  cspId                                 Int
-  createdAt                             DateTime                               @default(now())
-  updatedAt                             DateTime                               @updatedAt
-  csp                                   Csp                                    @relation("CspToCspService", fields: [cspId], references: [id], onDelete: Cascade)
-
-  summaryVendorServiceCspService SummaryVendorServiceCspService[]
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-model OutsourcingPartner {
-  id                    Int                   @id @default(autoincrement())
-  name                  String                @unique
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  antisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-
-  outsourcingServices                           OutsourcingService[]
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-model OutsourcingService {
-  id                                            Int                                            @id @default(autoincrement())
-  name                                          String                                         @unique
-  outsourcingPartnerId                          Int
-  createdAt                                     DateTime                                       @default(now())
-  updatedAt                                     DateTime                                       @updatedAt
-  outsourcingPartner                            OutsourcingPartner                             @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-model Cycle {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  startDate DateTime
-  endDate   DateTime
-  isActive Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  summaryVendorServices SummaryVendorService[]
-  summaryVendorServiceCspService SummaryVendorServiceCspService[]
-  summaryOutsourcingServiceCspService SummaryOutsourcingServiceCspService[]
-}
-
-//// Summary
-// vendorService Summary
-model SummaryVendorService {
-  id               Int                 @id @default(autoincrement())
-  cycleId Int
-  clientId  Int
-  vendorId  Int
-  vendorServiceId Int
-
-  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  vendorCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
-  vendorDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  vendorService VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
-
-  @@unique([clientId, vendorServiceId])
-}
-
-// cspService Summary
-model SummaryVendorServiceCspService {
-  id               Int                 @id @default(autoincrement())
-  cycleId Int
-  clientId                     Int
-  vendorId                     Int
-  vendorServiceId              Int
-  cspId                        Int
-  cspServiceId                 Int
-
-  vendorAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  vendorCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
-  vendorDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
-
-  cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  cspCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
-  cspDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  client                     Client                     @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vendor                     Vendor                     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  vendorService              VendorService              @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
-  csp                        Csp                        @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  cspService                 CspService                 @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
-
-  @@unique([clientId, vendorServiceId, cspServiceId])
-}
-
-// outsourcingService Summary
-model SummaryOutsourcingServiceCspService {
-  id               Int                 @id @default(autoincrement())
-  cycleId Int
-  clientId                          Int
-  outsourcingPartnerId              Int
-  outsourcingServiceId              Int
-  cspId Int
-  cspServiceId Int
-
-  outsourcingPartnerAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-
-  cspAntisocialCheckStatus AntisocialCheckStatus @default(unchecked)
-  cspServiceCommonChecklistStatus           ChecklistStatusEnum @default(not_created)
-  cspServiceDetailChecklistStatus           ChecklistStatusEnum @default(not_created)
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  cycle Cycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  client                          Client                          @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  outsourcingPartner              OutsourcingPartner              @relation(fields: [outsourcingPartnerId], references: [id], onDelete: Cascade)
-  outsourcingService              OutsourcingService              @relation(fields: [outsourcingServiceId], references: [id], onDelete: Cascade)
-  csp                 Csp                 @relation(fields: [cspId], references: [id], onDelete: Cascade)
-  cspService                 CspService                 @relation(fields: [cspServiceId], references: [id], onDelete: Cascade)
-
-  @@unique([clientId, outsourcingServiceId, cspServiceId])
 }
