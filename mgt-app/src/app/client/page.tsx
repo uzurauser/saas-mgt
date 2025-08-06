@@ -20,7 +20,7 @@ async function deleteClient(formData: FormData) {
   "use server"
   const id = Number(formData.get("targetId"))
   await prisma.client.delete({ where: { id } })
-  redirect("/clients?success=deleted")
+  redirect("/client?success=deleted")
 }
 
 import type { Client } from "@prisma/client"
@@ -38,13 +38,10 @@ export default async function ClientsPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Clients</h1>
         <p className="text-gray-500">List of registered clients.</p>
       </section>
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <Link href="/">
-            <Button variant="outline">Back to Dashboard</Button>
-          </Link>
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100 max-w-[800px]">
+        <div className="flex justify-end items-center mb-6">
           <Button asChild>
-            <Link href="/clients/new">
+            <Link href="/client/new">
               <Plus className="w-4 h-4 mr-2" />
               New Client
             </Link>
@@ -55,14 +52,14 @@ export default async function ClientsPage() {
             <TableRow>
               <TableHead className="w-32">Actions</TableHead>
               <TableHead className="w-14 text-center">ID</TableHead>
-              <TableHead className="w-48 truncate">Client Name</TableHead>
+              <TableHead className="w-48 truncate">Name</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {clients.map((client) => (
               <TableRow key={client.id} className="hover:bg-blue-50 transition">
                 <TableCell className="w-32 flex gap-2 justify-center items-center">
-                  <Link href={`/clients/${client.id}/edit`}>
+                  <Link href={`/client/${client.id}/edit`}>
                     <Button
                       size="sm"
                       variant="outline"

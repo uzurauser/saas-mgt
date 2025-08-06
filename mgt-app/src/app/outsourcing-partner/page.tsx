@@ -14,6 +14,7 @@ import type {
   OutsourcingService,
   Client,
 } from "@prisma/client"
+import { Plus } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -69,31 +70,28 @@ export default async function OutsourcingPartnerPage() {
           List of registered outsourcing partners.
         </p>
       </section>
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <Link href="/">
-            <Button variant="outline">Back to Dashboard</Button>
-          </Link>
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100 max-w-[1200px]">
+        <div className="flex justify-end items-center mb-6">
+          <Button asChild>
+            <Link href="/outsourcing-partner/new">
+              <Plus className="w-4 h-4 mr-2" />
+              New Outsourcing Partner
+            </Link>
+          </Button>
         </div>
         <Table className="text-gray-900">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-56 truncate">Clients</TableHead>
-              <TableHead className="w-20 text-center">
-                Outsourcing Partner ID
-              </TableHead>
-              <TableHead className="w-48 truncate">
-                Outsourcing Partner Name
-              </TableHead>
-              <TableHead className="w-64 truncate">
-                Outsourcing Partner Services
-              </TableHead>
+              <TableHead className="w-20 truncate">Clients</TableHead>
+              <TableHead className="w-20 text-center">ID</TableHead>
+              <TableHead className="w-48 truncate">Name</TableHead>
+              <TableHead className="w-64 truncate">Services</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {partnerRows.map((row) => (
               <TableRow key={row.id} className="hover:bg-blue-50 transition">
-                <TableCell className="w-56 truncate">{row.clients}</TableCell>
+                <TableCell className="w-20 truncate">{row.clients}</TableCell>
                 <TableCell className="w-20 text-center">{row.id}</TableCell>
                 <TableCell className="w-48 truncate">{row.name}</TableCell>
                 <TableCell className="w-64 truncate">{row.services}</TableCell>

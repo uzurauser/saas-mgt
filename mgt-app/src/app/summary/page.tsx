@@ -170,13 +170,13 @@ export default async function SummaryPage() {
       </section>
       <div className="flex flex-col gap-8">
         {/* 1st Card: SummaryVendorService */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 max-w-[1200px]">
           <h2 className="text-xl font-bold mb-4">Vendor Service Summary</h2>
           <Table className="text-gray-900">
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Client</TableHead>
+                <TableHead className="min-w-[140px] w-[140px]">Client</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Vendor Service</TableHead>
                 <TableHead>Antisocial</TableHead>
@@ -188,7 +188,7 @@ export default async function SummaryPage() {
               {summaryRows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.clientName}</TableCell>
+                  <TableCell className="min-w-[140px] w-[140px]">{row.clientName}</TableCell>
                   <TableCell>{row.vendorName}</TableCell>
                   <TableCell>{row.vendorServiceName}</TableCell>
                   <TableCell>
@@ -214,7 +214,7 @@ export default async function SummaryPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Client</TableHead>
+                <TableHead className="min-w-[140px] w-[140px]">Client</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Vendor Service</TableHead>
                 <TableHead>Antisocial</TableHead>
@@ -232,7 +232,7 @@ export default async function SummaryPage() {
               {summaryCspRows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.clientName}</TableCell>
+                  <TableCell className="min-w-[140px] w-[140px]">{row.clientName}</TableCell>
                   <TableCell>{row.vendorName}</TableCell>
                   <TableCell>{row.vendorServiceName}</TableCell>
                   <TableCell>
@@ -274,7 +274,7 @@ export default async function SummaryPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Client</TableHead>
+                <TableHead className="min-w-[140px] w-[140px]">Client</TableHead>
                 <TableHead>Outsourcing Partner</TableHead>
                 <TableHead>Outsourcing Service</TableHead>
                 <TableHead>Antisocial</TableHead>
@@ -289,7 +289,7 @@ export default async function SummaryPage() {
               {summaryOutsourcingRows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.clientName}</TableCell>
+                  <TableCell className="min-w-[140px] w-[140px]">{row.clientName}</TableCell>
                   <TableCell>{row.outsourcingPartnerName}</TableCell>
                   <TableCell>{row.outsourcingServiceName}</TableCell>
                   <TableCell>

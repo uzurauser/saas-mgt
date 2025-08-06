@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils"
 import { Home, Users, Building2, Layers, ListChecks } from "lucide-react"
 
 const navItems = [
+  {
+    href: "/summary",
+    label: "Summary",
+    icon: <ListChecks size={18} />,
+  },
   { href: "/client", label: "Clients", icon: <Users size={18} /> },
   { href: "/vendor", label: "Vendors", icon: <Building2 size={18} /> },
   { href: "/csp", label: "CSPs", icon: <Building2 size={18} /> },
@@ -18,11 +23,6 @@ const navItems = [
     href: "/register",
     label: "Register",
     icon: <Layers size={18} />,
-  },
-  {
-    href: "/summary",
-    label: "Summary",
-    icon: <ListChecks size={18} />,
   },
 ]
 
@@ -54,7 +54,7 @@ export function SidebarNav() {
           </Link>
         ))}
         <div className="my-4 border-t border-slate-300" />
-        {navItems.slice(1, 4).map((item) => (
+        {navItems.slice(1, 5).map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -70,7 +70,7 @@ export function SidebarNav() {
           </Link>
         ))}
         <div className="my-4 border-t border-slate-300" />
-        {navItems.slice(4, 5).map((item) => (
+        {navItems.slice(5, 6).map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -86,7 +86,7 @@ export function SidebarNav() {
           </Link>
         ))}
         <div className="my-4 border-t border-slate-300" />
-        {navItems.slice(5).map((item) => (
+        {navItems.slice(6).map((item) => (
           <Link
             key={item.href}
             href={item.href}
