@@ -20,8 +20,8 @@ const navItems = [
   },
   { href: "/check-cycle", label: "Check Cycle", icon: <Building2 size={18} /> },
   {
-    href: "/register",
-    label: "Register",
+    href: "/report",
+    label: "Report",
     icon: <Layers size={18} />,
   },
 ]

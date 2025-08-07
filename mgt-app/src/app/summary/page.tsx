@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import Link from "next/link"
 import type {
   SummaryVendorService,
   SummaryVendorServiceCspService,
@@ -36,57 +37,9 @@ export default async function SummaryPage() {
   let outsourcingPartners: OutsourcingPartner[] = []
   let outsourcingServices: OutsourcingService[] = []
   try {
-    summary = await prisma.summaryVendorService.findMany({
-      select: {
-        id: true,
-        cycleId: true,
-        createdAt: true,
-        updatedAt: true,
-        clientId: true,
-        vendorId: true,
-        vendorServiceId: true,
-        vendorAntisocialCheckStatus: true,
-        vendorCommonChecklistStatus: true,
-        vendorDetailChecklistStatus: true,
-      },
-    })
-    summaryCsp = await prisma.summaryVendorServiceCspService.findMany({
-      select: {
-        id: true,
-        cycleId: true,
-        createdAt: true,
-        updatedAt: true,
-        clientId: true,
-        vendorId: true,
-        vendorServiceId: true,
-        cspId: true,
-        cspServiceId: true,
-        vendorAntisocialCheckStatus: true,
-        vendorCommonChecklistStatus: true,
-        vendorDetailChecklistStatus: true,
-        cspAntisocialCheckStatus: true,
-        cspCommonChecklistStatus: true,
-        cspDetailChecklistStatus: true,
-      },
-    })
-    summaryOutsourcing =
-      await prisma.summaryOutsourcingServiceCspService.findMany({
-        select: {
-          id: true,
-          cycleId: true,
-          createdAt: true,
-          updatedAt: true,
-          clientId: true,
-          outsourcingPartnerId: true,
-          outsourcingServiceId: true,
-          cspId: true,
-          cspServiceId: true,
-          outsourcingPartnerAntisocialCheckStatus: true,
-          cspAntisocialCheckStatus: true,
-          cspServiceCommonChecklistStatus: true,
-          cspServiceDetailChecklistStatus: true,
-        },
-      })
+    summary = await prisma.summaryVendorService.findMany()
+    summaryCsp = await prisma.summaryVendorServiceCspService.findMany()
+    summaryOutsourcing = await prisma.summaryOutsourcingServiceCspService.findMany()
     clients = await prisma.client.findMany()
     vendors = await prisma.vendor.findMany()
     vendorServices = await prisma.vendorService.findMany()
@@ -94,25 +47,15 @@ export default async function SummaryPage() {
     cspServices = await prisma.cspService.findMany()
     outsourcingPartners = await prisma.outsourcingPartner.findMany()
     outsourcingServices = await prisma.outsourcingService.findMany()
-  } catch {
-    summary = []
-    summaryCsp = []
-    summaryOutsourcing = []
-    clients = []
-    vendors = []
-    vendorServices = []
-    csps = []
-    cspServices = []
-    outsourcingPartners = []
-    outsourcingServices = []
+  } catch (e) {
+    // エラー時は空配列のまま
   }
 
   // 1st card
   const summaryRows = summary.map((row) => {
     const clientName = clients.find((c) => c.id === row.clientId)?.name || ""
     const vendorName = vendors.find((v) => v.id === row.vendorId)?.name || ""
-    const vendorServiceName =
-      vendorServices.find((s) => s.id === row.vendorServiceId)?.name || ""
+    const vendorServiceName = vendorServices.find((s) => s.id === row.vendorServiceId)?.name || ""
     return {
       ...row,
       clientName,
@@ -120,16 +63,13 @@ export default async function SummaryPage() {
       vendorServiceName,
     }
   })
-
   // 2nd card
   const summaryCspRows = summaryCsp.map((row) => {
     const clientName = clients.find((c) => c.id === row.clientId)?.name || ""
     const vendorName = vendors.find((v) => v.id === row.vendorId)?.name || ""
-    const vendorServiceName =
-      vendorServices.find((s) => s.id === row.vendorServiceId)?.name || ""
+    const vendorServiceName = vendorServices.find((s) => s.id === row.vendorServiceId)?.name || ""
     const cspName = csps.find((c) => c.id === row.cspId)?.name || ""
-    const cspServiceName =
-      cspServices.find((s) => s.id === row.cspServiceId)?.name || ""
+    const cspServiceName = cspServices.find((s) => s.id === row.cspServiceId)?.name || ""
     return {
       ...row,
       clientName,
@@ -139,19 +79,13 @@ export default async function SummaryPage() {
       cspServiceName,
     }
   })
-
   // 3rd card
   const summaryOutsourcingRows = summaryOutsourcing.map((row) => {
     const clientName = clients.find((c) => c.id === row.clientId)?.name || ""
-    const outsourcingPartnerName =
-      outsourcingPartners.find((p) => p.id === row.outsourcingPartnerId)
-        ?.name || ""
-    const outsourcingServiceName =
-      outsourcingServices.find((s) => s.id === row.outsourcingServiceId)
-        ?.name || ""
+    const outsourcingPartnerName = outsourcingPartners.find((p) => p.id === row.outsourcingPartnerId)?.name || ""
+    const outsourcingServiceName = outsourcingServices.find((s) => s.id === row.outsourcingServiceId)?.name || ""
     const cspName = csps.find((c) => c.id === row.cspId)?.name || ""
-    const cspServiceName =
-      cspServices.find((s) => s.id === row.cspServiceId)?.name || ""
+    const cspServiceName = cspServices.find((s) => s.id === row.cspServiceId)?.name || ""
     return {
       ...row,
       clientName,
@@ -171,7 +105,12 @@ export default async function SummaryPage() {
       <div className="flex flex-col gap-8">
         {/* 1st Card: SummaryVendorService */}
         <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 max-w-[1200px]">
-          <h2 className="text-xl font-bold mb-4">Vendor Service Summary</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Vendor Service Summary</h2>
+            <Link href="/summary/edit-vendor-service">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">Edit</button>
+            </Link>
+          </div>
           <Table className="text-gray-900">
             <TableHeader>
               <TableRow>
@@ -207,9 +146,12 @@ export default async function SummaryPage() {
         </div>
         {/* 2nd Card: SummaryVendorServiceCspService */}
         <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-          <h2 className="text-xl font-bold mb-4">Vendor Service CSP Summary</h2>
-
-          {/* 1. 2-row header with colSpan Vendor/CSP groups */}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Vendor Service CSP Summary</h2>
+            <Link href="/summary/edit-vendor-csp-service">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">Edit</button>
+            </Link>
+          </div>
           <Table className="text-gray-900">
             <TableHeader>
               <TableRow>
@@ -260,16 +202,15 @@ export default async function SummaryPage() {
               ))}
             </TableBody>
           </Table>
-
-          {/* 2. 単色グループ背景＆太ボーダーだけのバリエーション
-          {/* 下記のテーブルを有効にすると別の配色バリエーションが見られます。
-              JSXコメントで囲んであるので、必要に応じて切り替えてください。 */}
         </div>
         {/* 3rd Card: SummaryOutsourcingServiceCspService */}
         <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-          <h2 className="text-xl font-bold mb-4">
-            Outsourcing Service CSP Summary
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Outsourcing Service CSP Summary</h2>
+            <Link href="/summary/edit-outsourcing-csp-service">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">Edit</button>
+            </Link>
+          </div>
           <Table className="text-gray-900">
             <TableHeader>
               <TableRow>
@@ -293,11 +234,7 @@ export default async function SummaryPage() {
                   <TableCell>{row.outsourcingPartnerName}</TableCell>
                   <TableCell>{row.outsourcingServiceName}</TableCell>
                   <TableCell>
-                    <Badge
-                      value={String(
-                        row.outsourcingPartnerAntisocialCheckStatus
-                      )}
-                    />
+                    <Badge value={String(row.outsourcingPartnerAntisocialCheckStatus)} />
                   </TableCell>
                   <TableCell>{row.cspName}</TableCell>
                   <TableCell>{row.cspServiceName}</TableCell>
@@ -305,14 +242,10 @@ export default async function SummaryPage() {
                     <Badge value={String(row.cspAntisocialCheckStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      value={String(row.cspServiceCommonChecklistStatus)}
-                    />
+                    <Badge value={String(row.cspServiceCommonChecklistStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      value={String(row.cspServiceDetailChecklistStatus)}
-                    />
+                    <Badge value={String(row.cspServiceDetailChecklistStatus)} />
                   </TableCell>
                 </TableRow>
               ))}

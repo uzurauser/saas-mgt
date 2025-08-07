@@ -46,60 +46,63 @@ export async function saveVendorServiceSummary(formData: FormData) {
     }
   }
 
-  // 2. 削除処理
-  for (const row of rows) {
-    if (row._action === "delete" && row.id) {
-      await prisma.summaryVendorService.delete({ where: { id: row.id } })
+  // トランザクションでまとめて処理
+  await prisma.$transaction(async (tx) => {
+    // 2. 削除処理
+    for (const row of rows) {
+      if (row._action === "delete" && row.id) {
+        await tx.summaryVendorService.delete({ where: { id: row.id } })
+      }
     }
-  }
-  // 3. insert or update
-  for (const row of rows) {
-    if (row._action === "delete") continue
-    // Clientは既存のみ選択なので、必ず存在する
-    const client = await prisma.client.findUnique({ where: { name: row.client } })
-    if (!client) throw new Error(`Client not found: ${row.client}`)
+    // 3. insert or update
+    for (const row of rows) {
+      if (row._action === "delete") continue
+      // Clientは既存のみ選択なので、必ず存在する
+      const client = await tx.client.findUnique({ where: { name: row.client } })
+      if (!client) throw new Error(`Client not found: ${row.client}`)
 
-    // Vendor: なければ作成
-    let vendor = await prisma.vendor.findUnique({ where: { name: row.vendor } })
-    if (!vendor) {
-      vendor = await prisma.vendor.create({ data: { name: row.vendor } })
-    }
-    // Service: なければ作成
-    let service = await prisma.vendorService.findUnique({ where: { name: row.service } })
-    if (!service) {
-      service = await prisma.vendorService.create({ data: { name: row.service, vendorId: vendor.id } })
-    }
-    // SummaryVendorService: clientId+vendorServiceId組が既にあればupdate、なければinsert
-    const summary = await prisma.summaryVendorService.findUnique({
-      where: {
-        clientId_vendorServiceId: {
-          clientId: client.id,
-          vendorServiceId: service.id,
-        },
-      },
-    })
-    if (!summary) {
-      await prisma.summaryVendorService.create({
-        data: {
-          clientId: client.id,
-          vendorId: vendor.id,
-          vendorServiceId: service.id,
-          vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
-          vendorCommonChecklistStatus: toChecklistEnum(row.common),
-          vendorDetailChecklistStatus: toChecklistEnum(row.detail),
-          cycleId: 1,
+      // Vendor: なければ作成
+      let vendor = await tx.vendor.findUnique({ where: { name: row.vendor } })
+      if (!vendor) {
+        vendor = await tx.vendor.create({ data: { name: row.vendor } })
+      }
+      // Service: なければ作成
+      let service = await tx.vendorService.findUnique({ where: { name: row.service } })
+      if (!service) {
+        service = await tx.vendorService.create({ data: { name: row.service, vendorId: vendor.id } })
+      }
+      // SummaryVendorService: clientId+vendorServiceId組が既にあればupdate、なければinsert
+      const summary = await tx.summaryVendorService.findUnique({
+        where: {
+          clientId_vendorServiceId: {
+            clientId: client.id,
+            vendorServiceId: service.id,
+          },
         },
       })
-    } else {
-      await prisma.summaryVendorService.update({
-        where: { id: summary.id },
-        data: {
-          vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
-          vendorCommonChecklistStatus: toChecklistEnum(row.common),
-          vendorDetailChecklistStatus: toChecklistEnum(row.detail),
-        },
-      })
+      if (!summary) {
+        await tx.summaryVendorService.create({
+          data: {
+            clientId: client.id,
+            vendorId: vendor.id,
+            vendorServiceId: service.id,
+            vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
+            vendorCommonChecklistStatus: toChecklistEnum(row.common),
+            vendorDetailChecklistStatus: toChecklistEnum(row.detail),
+            cycleId: 1,
+          },
+        })
+      } else {
+        await tx.summaryVendorService.update({
+          where: { id: summary.id },
+          data: {
+            vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
+            vendorCommonChecklistStatus: toChecklistEnum(row.common),
+            vendorDetailChecklistStatus: toChecklistEnum(row.detail),
+          },
+        })
+      }
     }
-  }
+  })
   return { ok: true }
 }
