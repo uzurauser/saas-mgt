@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import CreatableSelect from "react-select/creatable"
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useRef } from "react"
 import { saveVendorServiceSummary } from "./saveSummary.server"
 import { useRouter } from "next/navigation"
 
@@ -21,7 +21,6 @@ export enum AntisocialCheckStatus {
 }
 
 const checklistStatusOptions = [
-  { value: '', label: 'Select' },
   { value: ChecklistStatusEnum.NotCreated, label: 'Not Created' },
   { value: ChecklistStatusEnum.Completed, label: 'Completed' },
   { value: ChecklistStatusEnum.NotRequired, label: 'Not Required' },
@@ -90,17 +89,20 @@ export default function EditVendorServiceSummaryClient({
   serviceOptions,
   initialRows = [],
 }: Props) {
-  const [rows, setRows] = useState<Row[]>([])
-  const [message, setMessage] = useState<string>("")
+  const [rows, setRows] = useState<Row[]>(initialRows)
   const [isPending, setIsPending] = useState(false)
   const [validationErrors, setValidationErrors] = useState<Record<number, string>>({})
   const router = useRouter()
   const initialRowsRef = useRef(initialRows)
 
-  useEffect(() => {
-    setRows(initialRows.length > 0 ? initialRows : [])
-    initialRowsRef.current = initialRows
-  }, [initialRows])
+  // 初回のみrowsを初期化
+  React.useEffect(() => {
+    if (rows.length === 0 && initialRows.length > 0) {
+      setRows(initialRows)
+      initialRowsRef.current = initialRows
+    }
+    // eslint-disable-next-line
+  }, [])
 
   // 行追加
   const handleAdd = () => {
@@ -112,8 +114,8 @@ export default function EditVendorServiceSummaryClient({
         vendor: "",
         service: "",
         antisocial: AntisocialCheckStatus.Unchecked,
-        common: "",
-        detail: "",
+        common: ChecklistStatusEnum.NotCreated,
+        detail: ChecklistStatusEnum.NotCreated,
         isNew: true,
       },
     ])
@@ -137,7 +139,6 @@ export default function EditVendorServiceSummaryClient({
   }
   // 保存
   const handleSave = async (formData: FormData) => {
-    setMessage("")
     setIsPending(true)
     setValidationErrors({})
     // クライアント側バリデーション
@@ -149,7 +150,6 @@ export default function EditVendorServiceSummaryClient({
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
       setIsPending(false)
-      setMessage("Validation error. Please check required fields.")
       return
     }
     try {
@@ -157,10 +157,10 @@ export default function EditVendorServiceSummaryClient({
       const rowsForSave = rows.map(({ isNew, ...rest }) => rest)
       formData.set("rows", JSON.stringify(rowsForSave))
       await saveVendorServiceSummary(formData)
-      setMessage("Saved successfully.")
-      router.refresh()
+      router.push("/summary")
     } catch (e: any) {
-      setMessage(e.message || "Save error")
+      // エラー時のみ表示
+      alert(e.message || "Save error")
     } finally {
       setIsPending(false)
     }
@@ -174,7 +174,6 @@ export default function EditVendorServiceSummaryClient({
     <main className="p-0 flex justify-center items-start min-h-screen bg-[#f8fafc]">
       <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 w-full max-w-[1800px] mt-8">
         <h1 className="text-xl font-bold mb-4">Edit Vendor Service Summary</h1>
-        {message && <div className={message.includes("error") || message.includes("Duplicate") ? "mb-2 text-red-700 font-semibold truncate max-w-2xl" : "mb-2 text-blue-700 font-semibold"}>{message}</div>}
         <form action={handleSave}>
           <table className="w-full border mb-4 text-sm">
             <thead>
@@ -205,7 +204,7 @@ export default function EditVendorServiceSummaryClient({
                     <td className="border px-2 py-1">
                       <select
                         className="border rounded px-2 py-1 w-full min-w-[120px]"
-                        value={row.client}
+                        value={clientOptions.some(opt => opt.name === row.client) ? row.client : ""}
                         onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, client: e.target.value } : r))}
                       >
                         <option value="">Select</option>
@@ -244,7 +243,7 @@ export default function EditVendorServiceSummaryClient({
                     <td className="border px-2 py-1">
                       <select
                         className="border rounded px-2 py-1 w-full min-w-[90px]"
-                        value={row.common}
+                        value={row.common || ChecklistStatusEnum.NotCreated}
                         onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, common: e.target.value } : r))}
                       >
                         {checklistStatusOptions.map(opt => (
@@ -255,7 +254,7 @@ export default function EditVendorServiceSummaryClient({
                     <td className="border px-2 py-1">
                       <select
                         className="border rounded px-2 py-1 w-full min-w-[90px]"
-                        value={row.detail}
+                        value={row.detail || ChecklistStatusEnum.NotCreated}
                         onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, detail: e.target.value } : r))}
                       >
                         {checklistStatusOptions.map(opt => (

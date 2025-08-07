@@ -1,16 +1,37 @@
 "use server"
 import { prisma } from "@/lib/prisma"
-import { ChecklistStatusEnum } from "./EditVendorServiceSummaryClient"
+import { ChecklistStatusEnum, AntisocialCheckStatus } from "./EditVendorServiceSummaryClient"
 
 export type SaveSummaryRow = {
   id?: number
   client: string
   vendor: string
   service: string
-  antisocial: string
+  antisocial: AntisocialCheckStatus | ""
   common: ChecklistStatusEnum | ""
   detail: ChecklistStatusEnum | ""
   _action?: "delete" | undefined
+}
+
+function toAntisocialEnum(val: string): AntisocialCheckStatus | undefined {
+  if (!val) return undefined
+  if ([
+    "unchecked",
+    "checked",
+    "check_exception",
+    "monitor_checked",
+  ].includes(val)) return val as AntisocialCheckStatus
+  return undefined
+}
+function toChecklistEnum(val: string): ChecklistStatusEnum | undefined {
+  if (!val) return undefined
+  if ([
+    "not_created",
+    "completed",
+    "not_required",
+    "is_examined",
+  ].includes(val)) return val as ChecklistStatusEnum
+  return undefined
 }
 
 export async function saveVendorServiceSummary(formData: FormData) {
@@ -18,18 +39,20 @@ export async function saveVendorServiceSummary(formData: FormData) {
   if (!rowsJson) throw new Error("No data")
   const rows: SaveSummaryRow[] = JSON.parse(rowsJson)
 
+  // 1. すべての行をバリデーション。1つでも不備があればDB処理しない
   for (const row of rows) {
     if (row._action !== "delete" && (!row.client || !row.vendor || !row.service)) {
       throw new Error("Client, Vendor, Service are required.")
     }
   }
-  // 1. 削除処理
+
+  // 2. 削除処理
   for (const row of rows) {
     if (row._action === "delete" && row.id) {
       await prisma.summaryVendorService.delete({ where: { id: row.id } })
     }
   }
-  // 2. insertのみ許可（重複は何もしない）
+  // 3. insert or update
   for (const row of rows) {
     if (row._action === "delete") continue
     // Clientは既存のみ選択なので、必ず存在する
@@ -46,7 +69,7 @@ export async function saveVendorServiceSummary(formData: FormData) {
     if (!service) {
       service = await prisma.vendorService.create({ data: { name: row.service, vendorId: vendor.id } })
     }
-    // SummaryVendorService: clientId+vendorServiceId組が既にあればスキップ、なければinsert
+    // SummaryVendorService: clientId+vendorServiceId組が既にあればupdate、なければinsert
     const summary = await prisma.summaryVendorService.findUnique({
       where: {
         clientId_vendorServiceId: {
@@ -61,14 +84,22 @@ export async function saveVendorServiceSummary(formData: FormData) {
           clientId: client.id,
           vendorId: vendor.id,
           vendorServiceId: service.id,
-          vendorAntisocialCheckStatus: row.antisocial,
-          vendorCommonChecklistStatus: row.common || null,
-          vendorDetailChecklistStatus: row.detail || null,
-          cycleId: 1, // TODO: 必要に応じてcycleIdを指定
+          vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
+          vendorCommonChecklistStatus: toChecklistEnum(row.common),
+          vendorDetailChecklistStatus: toChecklistEnum(row.detail),
+          cycleId: 1,
+        },
+      })
+    } else {
+      await prisma.summaryVendorService.update({
+        where: { id: summary.id },
+        data: {
+          vendorAntisocialCheckStatus: toAntisocialEnum(row.antisocial),
+          vendorCommonChecklistStatus: toChecklistEnum(row.common),
+          vendorDetailChecklistStatus: toChecklistEnum(row.detail),
         },
       })
     }
-    // 既存の場合は何もしない
   }
   return { ok: true }
 }
