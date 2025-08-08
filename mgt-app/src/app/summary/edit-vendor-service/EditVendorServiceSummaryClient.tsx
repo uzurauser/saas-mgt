@@ -21,17 +21,17 @@ export enum AntisocialCheckStatus {
 }
 
 const checklistStatusOptions = [
-  { value: ChecklistStatusEnum.NotCreated, label: 'Not Created' },
-  { value: ChecklistStatusEnum.Completed, label: 'Completed' },
-  { value: ChecklistStatusEnum.NotRequired, label: 'Not Required' },
-  { value: ChecklistStatusEnum.IsExamined, label: 'Is Examined' },
+  { value: ChecklistStatusEnum.NotCreated, label: 'Not Created', color: '#ef4444' }, // 赤
+  { value: ChecklistStatusEnum.Completed, label: 'Completed', color: '#3b82f6' }, // 青
+  { value: ChecklistStatusEnum.NotRequired, label: 'Not Required', color: '#a3a3a3' }, // グレー
+  { value: ChecklistStatusEnum.IsExamined, label: 'Is Examined', color: '#22c55e' }, // 緑
 ]
 
 const antisocialOptions = [
-  { value: AntisocialCheckStatus.Unchecked, label: 'Unchecked' },
-  { value: AntisocialCheckStatus.Checked, label: 'Checked' },
-  { value: AntisocialCheckStatus.CheckException, label: 'Check Exception' },
-  { value: AntisocialCheckStatus.MonitorChecked, label: 'Monitor Checked' },
+  { value: AntisocialCheckStatus.Unchecked, label: 'Unchecked', color: '#ef4444' }, // 赤
+  { value: AntisocialCheckStatus.Checked, label: 'Checked', color: '#22c55e' }, // 緑
+  { value: AntisocialCheckStatus.CheckException, label: 'Check Exception', color: '#a3a3a3' }, // グレー
+  { value: AntisocialCheckStatus.MonitorChecked, label: 'Monitor Checked', color: '#64748b' }, // ブルーグレー
 ]
 
 type VendorAutocompleteInputProps = {

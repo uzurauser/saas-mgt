@@ -1,7 +1,8 @@
 "use client"
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts"
 
-const COLORS = ["#22c55e", "#ef4444", "#f59e42"]
+// unchecked: 赤, checked: 緑, check_exception: グレー, monitor_checked: ブルーグレー
+const COLORS = ["#ef4444", "#22c55e", "#a3a3a3", "#64748b"]
 
 export type CompliancePieChartProps = {
   checked: number

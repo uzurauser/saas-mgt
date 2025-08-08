@@ -58,8 +58,8 @@ export default async function DashboardPage() {
             value={outsourcingServiceCount}
           />
         </div>
-        <section className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 max-w-xl mx-auto mb-12">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Compliance Check Progress</h2>
+        <section className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 max-w-6xl mx-auto mb-12 flex items-center justify-center">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 absolute left-12 top-12">Compliance Check Progress</h2>
           <DashboardChartSection completed={completed} notCreated={notCreated} notRequired={notRequired} isExamined={isExamined} />
         </section>
       </div>
