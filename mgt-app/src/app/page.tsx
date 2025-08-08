@@ -24,14 +24,27 @@ export default async function DashboardPage() {
     prisma.cspService.count(),
     prisma.outsourcingPartner.count(),
     prisma.outsourcingService.count(),
-    prisma.summaryVendorService.count({ where: { vendorCommonChecklistStatus: "completed" } }),
-    prisma.summaryVendorService.count({ where: { vendorCommonChecklistStatus: "not_created" } }),
-    prisma.summaryVendorService.count({ where: { vendorCommonChecklistStatus: "not_required" } }),
-    prisma.summaryVendorService.count({ where: { vendorCommonChecklistStatus: "is_examined" } }),
-    prisma.summaryVendorService.findFirst({ orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+    prisma.summaryVendorService.count({
+      where: { vendorCommonChecklistStatus: "completed" },
+    }),
+    prisma.summaryVendorService.count({
+      where: { vendorCommonChecklistStatus: "not_created" },
+    }),
+    prisma.summaryVendorService.count({
+      where: { vendorCommonChecklistStatus: "not_required" },
+    }),
+    prisma.summaryVendorService.count({
+      where: { vendorCommonChecklistStatus: "is_examined" },
+    }),
+    prisma.summaryVendorService.findFirst({
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
+    }),
   ])
 
-  const lastUpdated = latestUpdate?.updatedAt ? format(new Date(latestUpdate.updatedAt), "yyyy-MM-dd HH:mm") : "-"
+  const lastUpdated = latestUpdate?.updatedAt
+    ? format(new Date(latestUpdate.updatedAt), "yyyy-MM-dd HH:mm")
+    : "-"
 
   return (
     <main className="flex-1 p-8 bg-[#f8fafc] min-h-screen">
@@ -41,7 +54,9 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h1>
             <p className="text-gray-500">System summary</p>
           </div>
-          <div className="text-gray-400 text-sm mt-2 md:mt-0">Last updated: {lastUpdated}</div>
+          <div className="text-gray-400 text-sm mt-2 md:mt-0">
+            Last updated: {lastUpdated}
+          </div>
         </section>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-10 mb-12">
           <SummaryCard label="Clients" value={clientCount} />
@@ -59,8 +74,13 @@ export default async function DashboardPage() {
           />
         </div>
         <section className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 max-w-6xl mx-auto mb-12 flex items-center justify-center">
-          <h2 className="text-lg font-bold text-gray-900 mb-4 absolute left-12 top-12">Compliance Check Progress</h2>
-          <DashboardChartSection completed={completed} notCreated={notCreated} notRequired={notRequired} isExamined={isExamined} />
+          {/* <h2 className="text-lg font-bold text-gray-900 mb-4 absolute left-12 top-12">Compliance Check Progress</h2> */}
+          <DashboardChartSection
+            completed={completed}
+            notCreated={notCreated}
+            notRequired={notRequired}
+            isExamined={isExamined}
+          />
         </section>
       </div>
     </main>
