@@ -13,7 +13,14 @@ RUN npm install
 # ソースコードコピー
 COPY . .
 
+# Prisma Client生成（型ファイルも含めて生成）
+RUN npx prisma generate
+
 # Next.js を本番用にビルド
+# テスト用のDATABASE_URLを指定、ただし、ビルドコンテナから、
+# ホストOSのMySQLにはアクセスできるように、host.docker.internal というホスト名を使う。
+# ホストOSのlocalhost」にアクセスできる。
+ENV DATABASE_URL="mysql://mock:mock@host.docker.internal:3308/mock_db?charset=utf8mb4"
 RUN npm run build
 
 # 2. 実行用ステージ（軽量）

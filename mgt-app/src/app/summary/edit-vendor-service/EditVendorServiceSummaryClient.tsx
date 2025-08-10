@@ -21,17 +21,45 @@ export enum AntisocialCheckStatus {
 }
 
 const checklistStatusOptions = [
-  { value: ChecklistStatusEnum.NotCreated, label: 'Not Created', color: '#ef4444' }, // 赤
-  { value: ChecklistStatusEnum.Completed, label: 'Completed', color: '#3b82f6' }, // 青
-  { value: ChecklistStatusEnum.NotRequired, label: 'Not Required', color: '#a3a3a3' }, // グレー
-  { value: ChecklistStatusEnum.IsExamined, label: 'Is Examined', color: '#22c55e' }, // 緑
+  {
+    value: ChecklistStatusEnum.NotCreated,
+    label: "Not Created",
+    color: "#ef4444",
+  }, // 赤
+  {
+    value: ChecklistStatusEnum.Completed,
+    label: "Completed",
+    color: "#3b82f6",
+  }, // 青
+  {
+    value: ChecklistStatusEnum.NotRequired,
+    label: "Not Required",
+    color: "#a3a3a3",
+  }, // グレー
+  {
+    value: ChecklistStatusEnum.IsExamined,
+    label: "Is Examined",
+    color: "#22c55e",
+  }, // 緑
 ]
 
 const antisocialOptions = [
-  { value: AntisocialCheckStatus.Unchecked, label: 'Unchecked', color: '#ef4444' }, // 赤
-  { value: AntisocialCheckStatus.Checked, label: 'Checked', color: '#22c55e' }, // 緑
-  { value: AntisocialCheckStatus.CheckException, label: 'Check Exception', color: '#a3a3a3' }, // グレー
-  { value: AntisocialCheckStatus.MonitorChecked, label: 'Monitor Checked', color: '#64748b' }, // ブルーグレー
+  {
+    value: AntisocialCheckStatus.Unchecked,
+    label: "Unchecked",
+    color: "#ef4444",
+  }, // 赤
+  { value: AntisocialCheckStatus.Checked, label: "Checked", color: "#22c55e" }, // 緑
+  {
+    value: AntisocialCheckStatus.CheckException,
+    label: "Check Exception",
+    color: "#a3a3a3",
+  }, // グレー
+  {
+    value: AntisocialCheckStatus.MonitorChecked,
+    label: "Monitor Checked",
+    color: "#64748b",
+  }, // ブルーグレー
 ]
 
 type VendorAutocompleteInputProps = {
@@ -39,8 +67,15 @@ type VendorAutocompleteInputProps = {
   onChange: (value: string) => void
   options: { id: number; name: string }[]
 }
-function VendorAutocompleteInput({ value, onChange, options }: VendorAutocompleteInputProps) {
-  const selectOptions = options.map((opt) => ({ value: opt.name, label: opt.name }))
+function VendorAutocompleteInput({
+  value,
+  onChange,
+  options,
+}: VendorAutocompleteInputProps) {
+  const selectOptions = options.map((opt) => ({
+    value: opt.name,
+    label: opt.name,
+  }))
   const current = value ? { value, label: value } : null
   return (
     <CreatableSelect
@@ -52,11 +87,18 @@ function VendorAutocompleteInput({ value, onChange, options }: VendorAutocomplet
       placeholder="Vendor"
       styles={{
         container: (base) => ({ ...base, minWidth: 0 }),
-        control: (base) => ({ ...base, minHeight: 36, borderColor: "#d1d5db", fontSize: 14 }),
+        control: (base) => ({
+          ...base,
+          minHeight: 36,
+          borderColor: "#d1d5db",
+          fontSize: 14,
+        }),
         menu: (base) => ({ ...base, zIndex: 9999 }),
         menuPortal: (base) => ({ ...base, zIndex: 9999 }),
       }}
-      menuPortalTarget={typeof window !== "undefined" ? document.body : undefined}
+      menuPortalTarget={
+        typeof window !== "undefined" ? document.body : undefined
+      }
       menuPosition="fixed"
       menuShouldBlockScroll={true}
       classNamePrefix="react-select"
@@ -86,12 +128,13 @@ type Props = {
 export default function EditVendorServiceSummaryClient({
   vendorOptions,
   clientOptions,
-  serviceOptions,
   initialRows = [],
 }: Props) {
   const [rows, setRows] = useState<Row[]>(initialRows)
   const [isPending, setIsPending] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<Record<number, string>>({})
+  const [validationErrors, setValidationErrors] = useState<
+    Record<number, string>
+  >({})
   const router = useRouter()
   const initialRowsRef = useRef(initialRows)
 
@@ -122,7 +165,9 @@ export default function EditVendorServiceSummaryClient({
   }
   // 行削除
   const handleDelete = (id?: number) => {
-    setRows(rows.map((row) => row.id === id ? { ...row, _action: "delete" } : row))
+    setRows(
+      rows.map((row) => (row.id === id ? { ...row, _action: "delete" } : row))
+    )
     setValidationErrors((prev) => {
       const copy = { ...prev }
       if (id) delete copy[id]
@@ -154,13 +199,14 @@ export default function EditVendorServiceSummaryClient({
     }
     try {
       // isNewフラグは送信時には除外
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const rowsForSave = rows.map(({ isNew, ...rest }) => rest)
       formData.set("rows", JSON.stringify(rowsForSave))
       await saveVendorServiceSummary(formData)
       router.push("/summary")
-    } catch (e: any) {
+    } catch (e: unknown) {
       // エラー時のみ表示
-      alert(e.message || "Save error")
+      alert((e as Error).message || "Save error")
     } finally {
       setIsPending(false)
     }
@@ -191,93 +237,185 @@ export default function EditVendorServiceSummaryClient({
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4 text-gray-400">No data</td>
+                  <td colSpan={8} className="text-center py-4 text-gray-400">
+                    No data
+                  </td>
                 </tr>
               ) : (
-                rows.map((row, idx) => (
+                rows.map((row, idx) =>
                   row._action === "delete" ? null : (
-                  <tr
-                    key={row.id}
-                    className={`hover:bg-blue-50 transition ${row.isNew ? 'bg-yellow-100' : ''}`}
-                  >
-                    <td className="border px-2 py-1 text-center">{idx + 1}</td>
-                    <td className="border px-2 py-1">
-                      <select
-                        className="border rounded px-2 py-1 w-full min-w-[120px]"
-                        value={clientOptions.some(opt => opt.name === row.client) ? row.client : ""}
-                        onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, client: e.target.value } : r))}
-                      >
-                        <option value="">Select</option>
-                        {clientOptions.map(opt => (
-                          <option key={opt.id} value={opt.name}>{opt.name}</option>
-                        ))}
-                      </select>
-                      {validationErrors[row.id ?? 0] && <div className="text-xs text-red-600 mt-1">{validationErrors[row.id ?? 0]}</div>}
-                    </td>
-                    <td className="border px-2 py-1">
-                      <VendorAutocompleteInput
-                        value={row.vendor}
-                        onChange={val => setRows(rows.map(r => r.id === row.id ? { ...r, vendor: val } : r))}
-                        options={vendorOptions}
-                      />
-                    </td>
-                    <td className="border px-2 py-1">
-                      <Input
-                        value={row.service}
-                        onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, service: e.target.value } : r))}
-                        placeholder="Service"
-                        className="w-full min-w-[120px]"
-                      />
-                    </td>
-                    <td className="border px-2 py-1">
-                      <select
-                        className="border rounded px-2 py-1 w-full min-w-[90px]"
-                        value={row.antisocial}
-                        onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, antisocial: e.target.value } : r))}
-                      >
-                        {antisocialOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="border px-2 py-1">
-                      <select
-                        className="border rounded px-2 py-1 w-full min-w-[90px]"
-                        value={row.common || ChecklistStatusEnum.NotCreated}
-                        onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, common: e.target.value } : r))}
-                      >
-                        {checklistStatusOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="border px-2 py-1">
-                      <select
-                        className="border rounded px-2 py-1 w-full min-w-[90px]"
-                        value={row.detail || ChecklistStatusEnum.NotCreated}
-                        onChange={e => setRows(rows.map(r => r.id === row.id ? { ...r, detail: e.target.value } : r))}
-                      >
-                        {checklistStatusOptions.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="border px-2 py-1 text-center">
-                      <Button variant="outline" size="sm" type="button" onClick={() => handleDelete(row.id)}>
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
+                    <tr
+                      key={row.id}
+                      className={`hover:bg-blue-50 transition ${
+                        row.isNew ? "bg-yellow-100" : ""
+                      }`}
+                    >
+                      <td className="border px-2 py-1 text-center">
+                        {idx + 1}
+                      </td>
+                      <td className="border px-2 py-1">
+                        <select
+                          className="border rounded px-2 py-1 w-full min-w-[120px]"
+                          value={
+                            clientOptions.some((opt) => opt.name === row.client)
+                              ? row.client
+                              : ""
+                          }
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id
+                                  ? { ...r, client: e.target.value }
+                                  : r
+                              )
+                            )
+                          }
+                        >
+                          <option value="">Select</option>
+                          {clientOptions.map((opt) => (
+                            <option key={opt.id} value={opt.name}>
+                              {opt.name}
+                            </option>
+                          ))}
+                        </select>
+                        {validationErrors[row.id ?? 0] && (
+                          <div className="text-xs text-red-600 mt-1">
+                            {validationErrors[row.id ?? 0]}
+                          </div>
+                        )}
+                      </td>
+                      <td className="border px-2 py-1">
+                        <VendorAutocompleteInput
+                          value={row.vendor}
+                          onChange={(val) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id ? { ...r, vendor: val } : r
+                              )
+                            )
+                          }
+                          options={vendorOptions}
+                        />
+                      </td>
+                      <td className="border px-2 py-1">
+                        <Input
+                          value={row.service}
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id
+                                  ? { ...r, service: e.target.value }
+                                  : r
+                              )
+                            )
+                          }
+                          placeholder="Service"
+                          className="w-full min-w-[120px]"
+                        />
+                      </td>
+                      <td className="border px-2 py-1">
+                        <select
+                          className="border rounded px-2 py-1 w-full min-w-[90px]"
+                          value={row.antisocial}
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id
+                                  ? { ...r, antisocial: e.target.value }
+                                  : r
+                              )
+                            )
+                          }
+                        >
+                          {antisocialOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="border px-2 py-1">
+                        <select
+                          className="border rounded px-2 py-1 w-full min-w-[90px]"
+                          value={row.common || ChecklistStatusEnum.NotCreated}
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id
+                                  ? { ...r, common: e.target.value }
+                                  : r
+                              )
+                            )
+                          }
+                        >
+                          {checklistStatusOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="border px-2 py-1">
+                        <select
+                          className="border rounded px-2 py-1 w-full min-w-[90px]"
+                          value={row.detail || ChecklistStatusEnum.NotCreated}
+                          onChange={(e) =>
+                            setRows(
+                              rows.map((r) =>
+                                r.id === row.id
+                                  ? { ...r, detail: e.target.value }
+                                  : r
+                              )
+                            )
+                          }
+                        >
+                          {checklistStatusOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="border px-2 py-1 text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          type="button"
+                          onClick={() => handleDelete(row.id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
                   )
-                ))
+                )
               )}
             </tbody>
           </table>
           <div className="flex items-center gap-2 mt-2">
-            <Button type="button" onClick={handleAdd} className="bg-slate-700 hover:bg-slate-800 text-white px-6 py-2 rounded">Add</Button>
+            <Button
+              type="button"
+              onClick={handleAdd}
+              className="bg-slate-700 hover:bg-slate-800 text-white px-6 py-2 rounded"
+            >
+              Add
+            </Button>
             <div className="flex-1" />
-            <Button type="button" variant="outline" className="px-6 py-2 rounded" onClick={handleCancel}>Cancel</Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded" disabled={isPending}>Save</Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="px-6 py-2 rounded"
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
+              disabled={isPending}
+            >
+              Save
+            </Button>
           </div>
         </form>
       </div>

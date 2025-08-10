@@ -1,5 +1,29 @@
+# node_modulesはビルド時に再インストールするので除外
 node_modules
 npm-debug.log
-.git
 Dockerfile
 .dockerignore
+
+# Next.js のビルド成果物（ローカルのものは不要）
+.next
+
+# Git関連
+.git
+.gitignore
+
+# 環境変数（本番はSecrets Managerや環境変数で渡す）
+.env
+.env.local
+.env.*.local
+
+# OSやエディタのキャッシュ
+.DS_Store
+*.swp
+*.swo
+
+# markdown
+*.md
+
+# backup
+*.bak
+BAK
