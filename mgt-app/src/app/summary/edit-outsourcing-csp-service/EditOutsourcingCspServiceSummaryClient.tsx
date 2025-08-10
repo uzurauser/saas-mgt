@@ -4,6 +4,7 @@ import CreatableSelect from "react-select/creatable"
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { saveOutsourcingCspServiceSummary } from "./saveSummaryOutsourcingCsp.server"
+import { AntisocialCheckStatus, ChecklistStatusEnum } from "@/types/checklist"
 
 type Option = { id: number; name: string }
 export type Row = {
@@ -13,12 +14,12 @@ export type Row = {
   service: string
   csp: string
   cspService: string
-  partnerAntisocial: string
-  partnerCommon: string
-  partnerDetail: string
-  cspAntisocial: string
-  cspCommon: string
-  cspDetail: string
+  partnerAntisocial: AntisocialCheckStatus
+  partnerCommon: ChecklistStatusEnum
+  partnerDetail: ChecklistStatusEnum
+  cspAntisocial: AntisocialCheckStatus
+  cspCommon: ChecklistStatusEnum
+  cspDetail: ChecklistStatusEnum
   isNew?: boolean
   _action?: "delete"
 }
@@ -43,10 +44,23 @@ export default function EditOutsourcingCspServiceSummaryClient({
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
-  const handleChange = (idx: number, field: keyof Row, value: string) => {
+  const handleChange = (idx: number, field: keyof Row, value: string | AntisocialCheckStatus | ChecklistStatusEnum) => {
     setRows((rows) =>
       rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
     )
+  }
+
+  // セレクトボックスの変更を処理（型安全な変換）
+  const handleSelectChange = (
+    idx: number,
+    field: 'partnerAntisocial' | 'partnerCommon' | 'partnerDetail' | 'cspAntisocial' | 'cspCommon' | 'cspDetail',
+    value: string
+  ) => {
+    if (field.endsWith('Antisocial')) {
+      handleChange(idx, field, value as AntisocialCheckStatus);
+    } else {
+      handleChange(idx, field, value as ChecklistStatusEnum);
+    }
   }
   const handleDelete = (idx: number) => {
     setRows((rows) => rows.filter((_, i) => i !== idx))
@@ -60,14 +74,14 @@ export default function EditOutsourcingCspServiceSummaryClient({
         service: "",
         csp: "",
         cspService: "",
-        partnerAntisocial: "unchecked",
-        partnerCommon: "not_created",
-        partnerDetail: "not_created",
-        cspAntisocial: "unchecked",
-        cspCommon: "not_created",
-        cspDetail: "not_created",
+        partnerAntisocial: AntisocialCheckStatus.unchecked,
+        partnerCommon: ChecklistStatusEnum.not_created,
+        partnerDetail: ChecklistStatusEnum.not_created,
+        cspAntisocial: AntisocialCheckStatus.unchecked,
+        cspCommon: ChecklistStatusEnum.not_created,
+        cspDetail: ChecklistStatusEnum.not_created,
         isNew: true,
-      },
+      } as Row,
     ])
   }
   const handleCancel = () => {
@@ -131,7 +145,7 @@ export default function EditOutsourcingCspServiceSummaryClient({
                           handleChange(idx, "client", e.target.value)
                         }
                       >
-                        <option value="">Select client</option>
+                        <option value="">クライアントを選択</option>
                         {clientOptions.map((opt: Option) => (
                           <option key={opt.id} value={opt.name}>
                             {opt.name}
@@ -189,13 +203,13 @@ export default function EditOutsourcingCspServiceSummaryClient({
                         className="border rounded px-2 py-1 w-full min-w-[100px]"
                         value={row.partnerAntisocial}
                         onChange={(e) =>
-                          handleChange(idx, "partnerAntisocial", e.target.value)
+                          handleSelectChange(idx, "partnerAntisocial", e.target.value)
                         }
                       >
-                        <option value="unchecked">Unchecked</option>
-                        <option value="checked">Checked</option>
-                        <option value="check_exception">Check Exception</option>
-                        <option value="monitor_checked">Monitor Checked</option>
+                        <option value={AntisocialCheckStatus.unchecked}>未確認</option>
+                        <option value={AntisocialCheckStatus.checked}>確認済</option>
+                        <option value={AntisocialCheckStatus.check_exception}>省略先</option>
+                        <option value={AntisocialCheckStatus.monitor_checked}>モニター済</option>
                       </select>
                     </td>
                     {/* CSP */}
@@ -246,13 +260,13 @@ export default function EditOutsourcingCspServiceSummaryClient({
                         className="border rounded px-2 py-1 w-full min-w-[100px]"
                         value={row.cspAntisocial}
                         onChange={(e) =>
-                          handleChange(idx, "cspAntisocial", e.target.value)
+                          handleSelectChange(idx, "cspAntisocial", e.target.value)
                         }
                       >
-                        <option value="unchecked">Unchecked</option>
-                        <option value="checked">Checked</option>
-                        <option value="check_exception">Check Exception</option>
-                        <option value="monitor_checked">Monitor Checked</option>
+                        <option value={AntisocialCheckStatus.unchecked}>未確認</option>
+                        <option value={AntisocialCheckStatus.checked}>確認済</option>
+                        <option value={AntisocialCheckStatus.check_exception}>省略先</option>
+                        <option value={AntisocialCheckStatus.monitor_checked}>モニター済</option>
                       </select>
                     </td>
                     {/* CSP Common */}
@@ -261,13 +275,13 @@ export default function EditOutsourcingCspServiceSummaryClient({
                         className="border rounded px-2 py-1 w-full min-w-[100px]"
                         value={row.cspCommon}
                         onChange={(e) =>
-                          handleChange(idx, "cspCommon", e.target.value)
+                          handleSelectChange(idx, "cspCommon", e.target.value)
                         }
                       >
-                        <option value="not_created">Not Created</option>
-                        <option value="completed">Completed</option>
-                        <option value="not_required">Not Required</option>
-                        <option value="is_examined">Is Examined</option>
+                        <option value={ChecklistStatusEnum.not_created}>未作成</option>
+                        <option value={ChecklistStatusEnum.completed}>完了</option>
+                        <option value={ChecklistStatusEnum.not_required}>不要</option>
+                        <option value={ChecklistStatusEnum.is_examined}>精査済</option>
                       </select>
                     </td>
                     {/* CSP Detail */}
@@ -276,13 +290,13 @@ export default function EditOutsourcingCspServiceSummaryClient({
                         className="border rounded px-2 py-1 w-full min-w-[90px]"
                         value={row.cspDetail}
                         onChange={(e) =>
-                          handleChange(idx, "cspDetail", e.target.value)
+                          handleSelectChange(idx, "cspDetail", e.target.value)
                         }
                       >
-                        <option value="not_created">Not Created</option>
-                        <option value="completed">Completed</option>
-                        <option value="not_required">Not Required</option>
-                        <option value="is_examined">Is Examined</option>
+                        <option value={ChecklistStatusEnum.not_created}>未作成</option>
+                        <option value={ChecklistStatusEnum.completed}>完了</option>
+                        <option value={ChecklistStatusEnum.not_required}>不要</option>
+                        <option value={ChecklistStatusEnum.is_examined}>精査済</option>
                       </select>
                     </td>
                     <td className="border px-2 py-1 text-center">

@@ -1,10 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { 
-  getAntisocialStatusLabel, 
-  getChecklistStatusLabel
-} from "@/types/checklist"
-import DebugStatus from "./DebugStatus"
+import { getAntisocialStatusLabel, getChecklistStatusLabel } from "@/types/checklist"
 import type {
   SummaryVendorService,
   SummaryVendorServiceCspService,
@@ -30,7 +26,6 @@ import { Badge } from "@/components/ui/Badge"
 export const dynamic = "force-dynamic"
 
 export default async function SummaryPage() {
-  
   // 1. fetch summary data
   let summary: SummaryVendorService[] = []
   let clients: Client[] = []
@@ -184,25 +179,25 @@ export default async function SummaryPage() {
                   <TableCell>{row.vendorName}</TableCell>
                   <TableCell>{row.vendorServiceName}</TableCell>
                   <TableCell>
-                    <Badge value={getAntisocialStatusLabel(row.vendorAntisocialCheckStatus)} />
+                    <Badge value={String(row.vendorAntisocialCheckStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge value={getChecklistStatusLabel(row.vendorCommonChecklistStatus)} />
+                    <Badge value={String(row.vendorCommonChecklistStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge value={getChecklistStatusLabel(row.vendorDetailChecklistStatus)} />
+                    <Badge value={String(row.vendorDetailChecklistStatus)} />
                   </TableCell>
                   <TableCell className="min-w-[48px] px-8" />
                   <TableCell>{row.cspName}</TableCell>
                   <TableCell>{row.cspServiceName}</TableCell>
                   <TableCell>
-                    <Badge value={getAntisocialStatusLabel(row.cspAntisocialCheckStatus)} />
+                    <Badge value={String(row.cspAntisocialCheckStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge value={getChecklistStatusLabel(row.cspCommonChecklistStatus)} />
+                    <Badge value={String(row.cspCommonChecklistStatus)} />
                   </TableCell>
                   <TableCell>
-                    <Badge value={getChecklistStatusLabel(row.cspDetailChecklistStatus)} />
+                    <Badge value={String(row.cspDetailChecklistStatus)} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -259,7 +254,6 @@ export default async function SummaryPage() {
           </Table>
         </div>
       </div>
-      <DebugStatus />
     </main>
   )
 }

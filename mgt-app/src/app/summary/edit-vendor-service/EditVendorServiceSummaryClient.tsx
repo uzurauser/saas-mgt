@@ -6,61 +6,12 @@ import React, { useState, useRef } from "react"
 import { saveVendorServiceSummary } from "./saveSummary.server"
 import { useRouter } from "next/navigation"
 
-export enum ChecklistStatusEnum {
-  NotCreated = "not_created",
-  Completed = "completed",
-  NotRequired = "not_required",
-  IsExamined = "is_examined",
-}
-
-export enum AntisocialCheckStatus {
-  Unchecked = "unchecked",
-  Checked = "checked",
-  CheckException = "check_exception",
-  MonitorChecked = "monitor_checked",
-}
-
-const checklistStatusOptions = [
-  {
-    value: ChecklistStatusEnum.NotCreated,
-    label: "Not Created",
-    color: "#ef4444",
-  }, // 赤
-  {
-    value: ChecklistStatusEnum.Completed,
-    label: "Completed",
-    color: "#3b82f6",
-  }, // 青
-  {
-    value: ChecklistStatusEnum.NotRequired,
-    label: "Not Required",
-    color: "#a3a3a3",
-  }, // グレー
-  {
-    value: ChecklistStatusEnum.IsExamined,
-    label: "Is Examined",
-    color: "#22c55e",
-  }, // 緑
-]
-
-const antisocialOptions = [
-  {
-    value: AntisocialCheckStatus.Unchecked,
-    label: "Unchecked",
-    color: "#ef4444",
-  }, // 赤
-  { value: AntisocialCheckStatus.Checked, label: "Checked", color: "#22c55e" }, // 緑
-  {
-    value: AntisocialCheckStatus.CheckException,
-    label: "Check Exception",
-    color: "#a3a3a3",
-  }, // グレー
-  {
-    value: AntisocialCheckStatus.MonitorChecked,
-    label: "Monitor Checked",
-    color: "#64748b",
-  }, // ブルーグレー
-]
+import { 
+  ChecklistStatusEnum, 
+  AntisocialCheckStatus,
+  checklistStatusOptions,
+  antisocialStatusOptions 
+} from "@/types/checklist"
 
 type VendorAutocompleteInputProps = {
   value: string
@@ -112,9 +63,9 @@ type Row = {
   client: string
   vendor: string
   service: string
-  antisocial: string
-  common: string
-  detail: string
+  antisocial: AntisocialCheckStatus
+  common: ChecklistStatusEnum
+  detail: ChecklistStatusEnum
   isNew?: boolean // 新規行フラグ
   _action?: "delete"
 }
@@ -156,11 +107,11 @@ export default function EditVendorServiceSummaryClient({
         client: "",
         vendor: "",
         service: "",
-        antisocial: AntisocialCheckStatus.Unchecked,
-        common: ChecklistStatusEnum.NotCreated,
-        detail: ChecklistStatusEnum.NotCreated,
+        antisocial: AntisocialCheckStatus.unchecked,
+        common: ChecklistStatusEnum.not_created,
+        detail: ChecklistStatusEnum.not_created,
         isNew: true,
-      },
+      } as Row, // 型アサーションを追加
     ])
   }
   // 行削除
@@ -174,6 +125,26 @@ export default function EditVendorServiceSummaryClient({
       return copy
     })
   }
+  // 編集
+  const handleChange = (idx: number, field: keyof Row, value: string | AntisocialCheckStatus | ChecklistStatusEnum) => {
+    setRows(rows =>
+      rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    )
+  }
+
+  // セレクトボックスの変更を処理（型安全な変換）
+  const handleSelectChange = (
+    idx: number,
+    field: 'antisocial' | 'common' | 'detail',
+    value: string
+  ) => {
+    if (field === 'antisocial') {
+      handleChange(idx, field, value as AntisocialCheckStatus);
+    } else {
+      handleChange(idx, field, value as ChecklistStatusEnum);
+    }
+  }
+
   // バリデーション
   const validate = (row: Row) => {
     if (row._action === "delete") return ""
@@ -262,13 +233,7 @@ export default function EditVendorServiceSummaryClient({
                               : ""
                           }
                           onChange={(e) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id
-                                  ? { ...r, client: e.target.value }
-                                  : r
-                              )
-                            )
+                            handleChange(idx, "client", e.target.value)
                           }
                         >
                           <option value="">Select</option>
@@ -288,11 +253,7 @@ export default function EditVendorServiceSummaryClient({
                         <VendorAutocompleteInput
                           value={row.vendor}
                           onChange={(val) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id ? { ...r, vendor: val } : r
-                              )
-                            )
+                            handleChange(idx, "vendor", val)
                           }
                           options={vendorOptions}
                         />
@@ -301,13 +262,7 @@ export default function EditVendorServiceSummaryClient({
                         <Input
                           value={row.service}
                           onChange={(e) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id
-                                  ? { ...r, service: e.target.value }
-                                  : r
-                              )
-                            )
+                            handleChange(idx, "service", e.target.value)
                           }
                           placeholder="Service"
                           className="w-full min-w-[120px]"
@@ -318,16 +273,10 @@ export default function EditVendorServiceSummaryClient({
                           className="border rounded px-2 py-1 w-full min-w-[90px]"
                           value={row.antisocial}
                           onChange={(e) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id
-                                  ? { ...r, antisocial: e.target.value }
-                                  : r
-                              )
-                            )
+                            handleSelectChange(idx, "antisocial", e.target.value)
                           }
                         >
-                          {antisocialOptions.map((opt) => (
+                          {antisocialStatusOptions.map((opt) => (
                             <option key={opt.value} value={opt.value}>
                               {opt.label}
                             </option>
@@ -337,15 +286,9 @@ export default function EditVendorServiceSummaryClient({
                       <td className="border px-2 py-1">
                         <select
                           className="border rounded px-2 py-1 w-full min-w-[90px]"
-                          value={row.common || ChecklistStatusEnum.NotCreated}
+                          value={row.common || ChecklistStatusEnum.not_created}
                           onChange={(e) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id
-                                  ? { ...r, common: e.target.value }
-                                  : r
-                              )
-                            )
+                            handleSelectChange(idx, "common", e.target.value)
                           }
                         >
                           {checklistStatusOptions.map((opt) => (
@@ -358,15 +301,9 @@ export default function EditVendorServiceSummaryClient({
                       <td className="border px-2 py-1">
                         <select
                           className="border rounded px-2 py-1 w-full min-w-[90px]"
-                          value={row.detail || ChecklistStatusEnum.NotCreated}
+                          value={row.detail || ChecklistStatusEnum.not_created}
                           onChange={(e) =>
-                            setRows(
-                              rows.map((r) =>
-                                r.id === row.id
-                                  ? { ...r, detail: e.target.value }
-                                  : r
-                              )
-                            )
+                            handleSelectChange(idx, "detail", e.target.value)
                           }
                         >
                           {checklistStatusOptions.map((opt) => (

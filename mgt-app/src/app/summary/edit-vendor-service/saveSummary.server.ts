@@ -1,6 +1,6 @@
 "use server"
 import { prisma } from "@/lib/prisma"
-import { ChecklistStatusEnum, AntisocialCheckStatus } from "./EditVendorServiceSummaryClient"
+import { AntisocialCheckStatus, ChecklistStatusEnum } from "@/types/checklist"
 
 export type SaveSummaryRow = {
   id?: number
@@ -15,23 +15,15 @@ export type SaveSummaryRow = {
 
 function toAntisocialEnum(val: string): AntisocialCheckStatus | undefined {
   if (!val) return undefined
-  if ([
-    "unchecked",
-    "checked",
-    "check_exception",
-    "monitor_checked",
-  ].includes(val)) return val as AntisocialCheckStatus
-  return undefined
+  return Object.values(AntisocialCheckStatus).includes(val as AntisocialCheckStatus)
+    ? val as AntisocialCheckStatus
+    : undefined
 }
 function toChecklistEnum(val: string): ChecklistStatusEnum | undefined {
   if (!val) return undefined
-  if ([
-    "not_created",
-    "completed",
-    "not_required",
-    "is_examined",
-  ].includes(val)) return val as ChecklistStatusEnum
-  return undefined
+  return Object.values(ChecklistStatusEnum).includes(val as ChecklistStatusEnum)
+    ? val as ChecklistStatusEnum
+    : undefined
 }
 
 export async function saveVendorServiceSummary(formData: FormData) {

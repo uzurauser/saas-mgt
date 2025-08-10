@@ -1,6 +1,7 @@
 "use client"
 import React from "react"
 import CreatableSelect from "react-select/creatable"
+import { AntisocialCheckStatus, ChecklistStatusEnum } from "@/types/checklist"
 
 type Option = { id: number; name: string }
 type Row = {
@@ -10,12 +11,12 @@ type Row = {
   service: string
   csp: string
   cspService: string
-  vendorAntisocial: string
-  vendorCommon: string
-  vendorDetail: string
-  cspAntisocial: string
-  cspCommon: string
-  cspDetail: string
+  vendorAntisocial: AntisocialCheckStatus
+  vendorCommon: ChecklistStatusEnum
+  vendorDetail: ChecklistStatusEnum
+  cspAntisocial: AntisocialCheckStatus
+  cspCommon: ChecklistStatusEnum
+  cspDetail: ChecklistStatusEnum
   isNew?: boolean
   _action?: "delete"
 }
@@ -45,8 +46,21 @@ export default function EditVendorCspServiceSummaryClient({
   const router = useRouter()
 
   // 編集
-  const handleChange = (idx: number, field: keyof Row, value: string) => {
+  const handleChange = (idx: number, field: keyof Row, value: string | AntisocialCheckStatus | ChecklistStatusEnum) => {
     setRows(rows => rows.map((row, i) => i === idx ? { ...row, [field]: value } : row))
+  }
+
+  // セレクトボックスの変更を処理（型安全な変換）
+  const handleSelectChange = (
+    idx: number,
+    field: 'vendorAntisocial' | 'vendorCommon' | 'vendorDetail' | 'cspAntisocial' | 'cspCommon' | 'cspDetail',
+    value: string
+  ) => {
+    if (field.endsWith('Antisocial')) {
+      handleChange(idx, field, value as AntisocialCheckStatus);
+    } else {
+      handleChange(idx, field, value as ChecklistStatusEnum);
+    }
   }
   // 削除
   const handleDelete = (idx: number) => {
@@ -60,14 +74,14 @@ export default function EditVendorCspServiceSummaryClient({
       service: "",
       csp: "",
       cspService: "",
-      vendorAntisocial: "unchecked",
-      vendorCommon: "not_created",
-      vendorDetail: "not_created",
-      cspAntisocial: "unchecked",
-      cspCommon: "not_created",
-      cspDetail: "not_created",
+      vendorAntisocial: AntisocialCheckStatus.unchecked,
+      vendorCommon: ChecklistStatusEnum.not_created,
+      vendorDetail: ChecklistStatusEnum.not_created,
+      cspAntisocial: AntisocialCheckStatus.unchecked,
+      cspCommon: ChecklistStatusEnum.not_created,
+      cspDetail: ChecklistStatusEnum.not_created,
       isNew: true,
-    }])
+    } as Row])
   }
   // キャンセル
   const handleCancel = () => {
@@ -149,27 +163,27 @@ export default function EditVendorCspServiceSummaryClient({
                   </td>
                   {/* Vendor Enum Columns */}
                   <td className="border px-2 py-1">
-                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorAntisocial} onChange={e => handleChange(idx, "vendorAntisocial", e.target.value)}>
-                      <option value="unchecked">Unchecked</option>
-                      <option value="checked">Checked</option>
-                      <option value="check_exception">Check Exception</option>
-                      <option value="monitor_checked">Monitor Checked</option>
+                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorAntisocial} onChange={e => handleSelectChange(idx, "vendorAntisocial", e.target.value)}>
+                      <option value={AntisocialCheckStatus.unchecked}>未確認</option>
+                      <option value={AntisocialCheckStatus.checked}>確認済</option>
+                      <option value={AntisocialCheckStatus.check_exception}>省略先</option>
+                      <option value={AntisocialCheckStatus.monitor_checked}>モニター済</option>
                     </select>
                   </td>
                   <td className="border px-2 py-1">
-                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorCommon} onChange={e => handleChange(idx, "vendorCommon", e.target.value)}>
-                      <option value="not_created">Not Created</option>
-                      <option value="completed">Completed</option>
-                      <option value="not_required">Not Required</option>
-                      <option value="is_examined">Is Examined</option>
+                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorCommon} onChange={e => handleSelectChange(idx, "vendorCommon", e.target.value)}>
+                      <option value={ChecklistStatusEnum.not_created}>未作成</option>
+                      <option value={ChecklistStatusEnum.completed}>完了</option>
+                      <option value={ChecklistStatusEnum.not_required}>不要</option>
+                      <option value={ChecklistStatusEnum.is_examined}>精査済</option>
                     </select>
                   </td>
                   <td className="border px-2 py-1">
-                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorDetail} onChange={e => handleChange(idx, "vendorDetail", e.target.value)}>
-                      <option value="not_created">Not Created</option>
-                      <option value="completed">Completed</option>
-                      <option value="not_required">Not Required</option>
-                      <option value="is_examined">Is Examined</option>
+                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.vendorDetail} onChange={e => handleSelectChange(idx, "vendorDetail", e.target.value)}>
+                      <option value={ChecklistStatusEnum.not_created}>未作成</option>
+                      <option value={ChecklistStatusEnum.completed}>完了</option>
+                      <option value={ChecklistStatusEnum.not_required}>不要</option>
+                      <option value={ChecklistStatusEnum.is_examined}>精査済</option>
                     </select>
                   </td>
                   {/* CSP Columns */}
@@ -191,27 +205,27 @@ export default function EditVendorCspServiceSummaryClient({
                   </td>
                   {/* CSP Enum Columns */}
                   <td className="border px-2 py-1">
-                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.cspAntisocial} onChange={e => handleChange(idx, "cspAntisocial", e.target.value)}>
-                      <option value="unchecked">Unchecked</option>
-                      <option value="checked">Checked</option>
-                      <option value="check_exception">Check Exception</option>
-                      <option value="monitor_checked">Monitor Checked</option>
+                    <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.cspAntisocial} onChange={e => handleSelectChange(idx, "cspAntisocial", e.target.value)}>
+                      <option value={AntisocialCheckStatus.unchecked}>未確認</option>
+                      <option value={AntisocialCheckStatus.checked}>確認済</option>
+                      <option value={AntisocialCheckStatus.check_exception}>省略先</option>
+                      <option value={AntisocialCheckStatus.monitor_checked}>モニター済</option>
                     </select>
                   </td>
                   <td className="border px-2 py-1">
                     <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.cspCommon} onChange={e => handleChange(idx, "cspCommon", e.target.value)}>
-                      <option value="not_created">Not Created</option>
-                      <option value="completed">Completed</option>
-                      <option value="not_required">Not Required</option>
-                      <option value="is_examined">Is Examined</option>
+                      <option value="not_created">未作成</option>
+                      <option value="completed">完了</option>
+                      <option value="not_required">不要</option>
+                      <option value="is_examined">精査済</option>
                     </select>
                   </td>
                   <td className="border px-2 py-1">
                     <select className="border rounded px-2 py-1 w-full min-w-[90px]" value={row.cspDetail} onChange={e => handleChange(idx, "cspDetail", e.target.value)}>
-                      <option value="not_created">Not Created</option>
-                      <option value="completed">Completed</option>
-                      <option value="not_required">Not Required</option>
-                      <option value="is_examined">Is Examined</option>
+                      <option value="not_created">未作成</option>
+                      <option value="completed">完了</option>
+                      <option value="not_required">不要</option>
+                      <option value="is_examined">精査済</option>
                     </select>
                   </td>
                   <td className="border px-2 py-1 text-center">
