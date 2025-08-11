@@ -6,11 +6,11 @@ import React, { useState, useRef } from "react"
 import { saveVendorServiceSummary } from "./saveSummary.server"
 import { useRouter } from "next/navigation"
 
-import { 
-  ChecklistStatusEnum, 
+import {
+  ChecklistStatusEnum,
   AntisocialCheckStatus,
   checklistStatusOptions,
-  antisocialStatusOptions 
+  antisocialStatusOptions,
 } from "@/types/checklist"
 
 type VendorAutocompleteInputProps = {
@@ -126,8 +126,12 @@ export default function EditVendorServiceSummaryClient({
     })
   }
   // 編集
-  const handleChange = (idx: number, field: keyof Row, value: string | AntisocialCheckStatus | ChecklistStatusEnum) => {
-    setRows(rows =>
+  const handleChange = (
+    idx: number,
+    field: keyof Row,
+    value: string | AntisocialCheckStatus | ChecklistStatusEnum
+  ) => {
+    setRows((rows) =>
       rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
     )
   }
@@ -135,13 +139,13 @@ export default function EditVendorServiceSummaryClient({
   // セレクトボックスの変更を処理（型安全な変換）
   const handleSelectChange = (
     idx: number,
-    field: 'antisocial' | 'common' | 'detail',
+    field: "antisocial" | "common" | "detail",
     value: string
   ) => {
-    if (field === 'antisocial') {
-      handleChange(idx, field, value as AntisocialCheckStatus);
+    if (field === "antisocial") {
+      handleChange(idx, field, value as AntisocialCheckStatus)
     } else {
-      handleChange(idx, field, value as ChecklistStatusEnum);
+      handleChange(idx, field, value as ChecklistStatusEnum)
     }
   }
 
@@ -252,9 +256,7 @@ export default function EditVendorServiceSummaryClient({
                       <td className="border px-2 py-1">
                         <VendorAutocompleteInput
                           value={row.vendor}
-                          onChange={(val) =>
-                            handleChange(idx, "vendor", val)
-                          }
+                          onChange={(val) => handleChange(idx, "vendor", val)}
                           options={vendorOptions}
                         />
                       </td>
@@ -273,7 +275,11 @@ export default function EditVendorServiceSummaryClient({
                           className="border rounded px-2 py-1 w-full min-w-[90px]"
                           value={row.antisocial}
                           onChange={(e) =>
-                            handleSelectChange(idx, "antisocial", e.target.value)
+                            handleSelectChange(
+                              idx,
+                              "antisocial",
+                              e.target.value
+                            )
                           }
                         >
                           {antisocialStatusOptions.map((opt) => (
@@ -332,23 +338,24 @@ export default function EditVendorServiceSummaryClient({
           <div className="flex items-center gap-2 mt-2">
             <Button
               type="button"
+              variant="default"
               onClick={handleAdd}
-              className="bg-slate-700 hover:bg-slate-800 text-white px-6 py-2 rounded"
+              // className="bg-slate-700 hover:bg-slate-800 text-white px-6 py-2 rounded"
             >
               Add
             </Button>
             <div className="flex-1" />
             <Button
-              type="button"
+              // type="button"
               variant="outline"
-              className="px-6 py-2 rounded"
+              // className="px-6 py-2 rounded"
               onClick={handleCancel}
             >
               Cancel
             </Button>
             <Button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded"
+              // type="submit"
+              variant="orange"
               disabled={isPending}
             >
               Save
