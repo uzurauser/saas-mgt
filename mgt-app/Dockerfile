@@ -1,43 +1,38 @@
-# 1. 依存関係インストール & ビルドステージ
+# 1. ビルドステージ
 FROM node:18-alpine AS builder
-
-# 作業ディレクトリ
 WORKDIR /app
 
-# package.json と lockファイルだけコピー（キャッシュを効かせるため）
+# 依存関係をキャッシュ効率よくインストール
 COPY package*.json ./
+RUN npm ci
 
-# 依存関係インストール
-RUN npm install
-
-# ソースコードコピー
+# ソースコードをコピー
 COPY . .
 
-# Prisma Client生成（型ファイルも含めて生成）
+# Prisma Client生成
 RUN npx prisma generate
 
-# Next.js を本番用にビルド
-# テスト用のDATABASE_URLを指定、ただし、ビルドコンテナから、
-# ホストOSのMySQLにはアクセスできるように、host.docker.internal というホスト名を使う。
-# ホストOSのlocalhost」にアクセスできる。
+# Next.js 本番ビルド
 ENV DATABASE_URL="mysql://mock:mock@host.docker.internal:3308/mock_db?charset=utf8mb4"
 RUN npm run build
 
-# 2. 実行用ステージ（軽量）
+# 2. 実行ステージ
 FROM node:18-alpine AS runner
-
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# ビルド済みファイルと必要な依存関係だけコピー
+# 本番依存だけインストール
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# ビルド成果物
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
 
-# ポート3000を開放
+# Prisma関連だけコピー
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
 EXPOSE 3000
-
-# Next.js の本番起動
 CMD ["npm", "start"]
+

@@ -7,6 +7,11 @@ Dockerfile
 # Next.js のビルド成果物（ローカルのものは不要）
 .next
 
+.next/cache
+.vscode
+.env.test
+.prisma
+
 # Git関連
 .git
 .gitignore
