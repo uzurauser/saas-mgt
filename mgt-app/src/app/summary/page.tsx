@@ -4,7 +4,6 @@ import {
   getAntisocialStatusLabel,
   getChecklistStatusLabel,
 } from "@/types/checklist"
-import DebugStatus from "./DebugStatus"
 import type {
   SummaryVendorService,
   SummaryVendorServiceCspService,
@@ -312,7 +311,6 @@ export default async function SummaryPage() {
           </Table>
         </div>
       </div>
-      <DebugStatus />
     </main>
   )
 }

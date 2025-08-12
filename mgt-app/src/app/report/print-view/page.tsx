@@ -48,6 +48,10 @@ export default async function ReportPrintViewPage() {
     },
     orderBy: { id: "asc" },
   })
+
+  /////// test
+  vendorRows.map((row) => console.log("!!!!row", row))
+
   // 2. プロバイダサービス
   const cspRows = await prisma.v_summary_vendor_service_csp_service.findMany({
     select: {
